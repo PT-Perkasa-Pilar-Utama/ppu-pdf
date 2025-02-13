@@ -26,10 +26,10 @@ describe("getTexts", () => {
 
     const page1Texts = texts.get(1);
     expect(page1Texts).toBeDefined();
-    expect(page1Texts!.words.length).toEqual(truthWords.words.length);
+    expect(page1Texts!.words.length).toEqual(truthWords["1"].words.length);
 
     const extractedWords = page1Texts!.words.map((word) => word.text);
-    const expectedWords = truthWords.words.map((w: any) => w.text);
+    const expectedWords = truthWords["1"].words.map((w: any) => w.text);
     expect(extractedWords).toEqual(expectedWords);
   });
 });

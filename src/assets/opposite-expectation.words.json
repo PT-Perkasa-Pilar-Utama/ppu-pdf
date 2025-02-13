@@ -1,505 +1,507 @@
 {
-  "words": [
-    {
-      "text": "Opposite Expectation: How to See the World as Two-Sided",
-      "bbox": {
-        "x0": 72,
-        "y0": 83.13183584999996,
-        "x1": 461.4900053795799,
-        "y1": 97.13183534999996
-      },
-      "dimension": {
-        "width": 389.4900053795799,
-        "height": 13.9999995
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f1",
-        "fontSize": 14,
-        "hasEOL": false
-      },
-      "id": 0
-    },
-    {
-      "text": "by Awal on May 27th, 2022",
-      "bbox": {
-        "x0": 75.053981775,
-        "y0": 101.83129785000003,
-        "x1": 207.45822942903806,
-        "y1": 112.83129810000003
-      },
-      "dimension": {
-        "width": 132.40424765403804,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 1
-    },
-    {
-      "text": "Everything has an opposite; the universe is meant to be balanced at all times. Nothing is",
-      "bbox": {
-        "x0": 72,
-        "y0": 128.3775626425,
-        "x1": 500.9461335750001,
-        "y1": 139.3775628925
-      },
-      "dimension": {
-        "width": 428.9461335750001,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 2
-    },
-    {
-      "text": "inherently better than something else.",
-      "bbox": {
-        "x0": 72,
-        "y0": 142.92382704250005,
-        "x1": 255.316222324458,
-        "y1": 153.92382729250005
-      },
-      "dimension": {
-        "width": 183.316222324458,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 3
-    },
-    {
-      "text": "While struggling with something, have you ever considered taking a different approach, a",
-      "bbox": {
-        "x0": 72,
-        "y0": 169.4700906424999,
-        "x1": 504.0005333790382,
-        "y1": 180.4700908924999
-      },
-      "dimension": {
-        "width": 432.0005333790382,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 4
-    },
-    {
-      "text": "new angle, or even tackling it from the opposite direction?",
-      "bbox": {
-        "x0": 72,
-        "y0": 184.01635504249995,
-        "x1": 352.46615442903794,
-        "y1": 195.01635529249995
-      },
-      "dimension": {
-        "width": 280.46615442903794,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 5
-    },
-    {
-      "text": "Surely, it is a contradiction—I cannot deny it. But perhaps we are missing the point.",
-      "bbox": {
-        "x0": 72,
-        "y0": 210.56262064250004,
-        "x1": 475.05201957445803,
-        "y1": 221.56262089250004
-      },
-      "dimension": {
-        "width": 403.05201957445803,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 6
-    },
-    {
-      "text": "I want to provide some examples. Did you know about imaginary numbers? They are",
-      "bbox": {
-        "x0": 72,
-        "y0": 237.10889064249997,
-        "x1": 484.415347029038,
-        "y1": 248.10889089249997
-      },
-      "dimension": {
-        "width": 412.415347029038,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 7
-    },
-    {
-      "text": "numbers that are not \"real.\" Imaginary numbers defy the conventional nature of",
-      "bbox": {
-        "x0": 72,
-        "y0": 251.6551550425,
-        "x1": 456.19737214945803,
-        "y1": 262.6551552925
-      },
-      "dimension": {
-        "width": 384.19737214945803,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 8
-    },
-    {
-      "text": "mathematics—how can we represent a negative quantity when measuring geometry?",
-      "bbox": {
-        "x0": 72,
-        "y0": 266.2014200425,
-        "x1": 486.873535629038,
-        "y1": 277.20142029249996
-      },
-      "dimension": {
-        "width": 414.873535629038,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 9
-    },
-    {
-      "text": "Even a precise field like mathematics sometimes requires a different perspective to arrive at",
-      "bbox": {
-        "x0": 72,
-        "y0": 292.7476806425,
-        "x1": 517.9908471494581,
-        "y1": 303.74768089249994
-      },
-      "dimension": {
-        "width": 445.9908471494581,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 10
-    },
-    {
-      "text": "its conclusions; a counterbalancing force is at work.",
-      "bbox": {
-        "x0": 72,
-        "y0": 307.2939450425,
-        "x1": 322.50382707445794,
-        "y1": 318.2939452925
-      },
-      "dimension": {
-        "width": 250.50382707445794,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 11
-    },
-    {
-      "text": "An extreme force will trigger an opposite reaction, restoring balance to the whole.",
-      "bbox": {
-        "x0": 72,
-        "y0": 333.8402106425,
-        "x1": 466.099988599458,
-        "y1": 344.8402108925
-      },
-      "dimension": {
-        "width": 394.099988599458,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 12
-    },
-    {
-      "text": "These writings reflect my personal perspective, drawing from my religious beliefs, Taoism,",
-      "bbox": {
-        "x0": 72,
-        "y0": 360.38647064250006,
-        "x1": 508.3988158994579,
-        "y1": 371.38647089250003
-      },
-      "dimension": {
-        "width": 436.3988158994579,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 13
-    },
-    {
-      "text": "and Stoicism. I do not intend to impose any doctrine or propaganda. After all, why worry",
-      "bbox": {
-        "x0": 72,
-        "y0": 374.9327350425,
-        "x1": 497.8706982750001,
-        "y1": 385.9327352925
-      },
-      "dimension": {
-        "width": 425.8706982750001,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 14
-    },
-    {
-      "text": "about things beyond our control?",
-      "bbox": {
-        "x0": 72,
-        "y0": 389.47900004250005,
-        "x1": 232.11564627903806,
-        "y1": 400.4790002925
-      },
-      "dimension": {
-        "width": 160.11564627903806,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 15
-    },
-    {
-      "text": "Writing this gives me chills, and reading it to myself is part of developing a healthy",
-      "bbox": {
-        "x0": 72,
-        "y0": 416.0252706425,
-        "x1": 469.7461121249999,
-        "y1": 427.02527089250003
-      },
-      "dimension": {
-        "width": 397.7461121249999,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 16
-    },
-    {
-      "text": "habit—gaining control over my own mind. Nothing more, nothing less—a simple form of",
-      "bbox": {
-        "x0": 72,
-        "y0": 430.57153504250005,
-        "x1": 496.61835964945783,
-        "y1": 441.5715352925
-      },
-      "dimension": {
-        "width": 424.61835964945783,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 17
-    },
-    {
-      "text": "self-satisfaction.",
-      "bbox": {
-        "x0": 72,
-        "y0": 445.1178000425,
-        "x1": 150.80992902445792,
-        "y1": 456.1178002925
-      },
-      "dimension": {
-        "width": 78.80992902445793,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 18
-    },
-    {
-      "text": "So, how do we approach a problem? Just note that every creation has two sides. Whenever",
-      "bbox": {
-        "x0": 72,
-        "y0": 471.6640606425,
-        "x1": 518.0449392432521,
-        "y1": 482.6640608925
-      },
-      "dimension": {
-        "width": 446.0449392432521,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 19
-    },
-    {
-      "text": "beauty is evident, ugliness is also defined. When there is a high, a low exists. When light",
-      "bbox": {
-        "x0": 72,
-        "y0": 486.2103250425,
-        "x1": 502.1519955494582,
-        "y1": 497.2103252925
-      },
-      "dimension": {
-        "width": 430.1519955494582,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": true
-      },
-      "id": 20
-    },
-    {
-      "text": "shines, a sharp shadow is cast.",
-      "bbox": {
-        "x0": 72,
-        "y0": 500.75659004249997,
-        "x1": 224.74956252445793,
-        "y1": 511.7565902925
-      },
-      "dimension": {
-        "width": 152.74956252445793,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 21
-    },
-    {
-      "text": "What you resist persists; what you accept transforms.",
-      "bbox": {
-        "x0": 72,
-        "y0": 527.3028606425001,
-        "x1": 332.245403674458,
-        "y1": 538.3028608925001
-      },
-      "dimension": {
-        "width": 260.245403674458,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 22
-    },
-    {
-      "text": "Declare your mindset: the universe is balanced.",
-      "bbox": {
-        "x0": 75.053981775,
-        "y0": 541.8491250425001,
-        "x1": 306.62204307445796,
-        "y1": 552.8491252925
-      },
-      "dimension": {
-        "width": 231.56806129945798,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 23
-    },
-    {
-      "text": "To be continued...",
-      "bbox": {
-        "x0": 72,
-        "y0": 568.3953806425001,
-        "x1": 158.98894129945805,
-        "y1": 579.3953808925
-      },
-      "dimension": {
-        "width": 86.98894129945805,
-        "height": 11.00000025
-      },
-      "metadata": {
-        "direction": "ltr",
-        "fontName": "g_d0_f2",
-        "fontSize": 11,
-        "hasEOL": false
-      },
-      "id": 24
-    }
-  ],
-  "lang": "in"
+  "1": {
+    "words": [
+      {
+        "text": "Opposite Expectation: How to See the World as Two-Sided",
+        "bbox": {
+          "x0": 72,
+          "y0": 83.13183584999996,
+          "x1": 461.4900053795799,
+          "y1": 97.13183534999996
+        },
+        "dimension": {
+          "width": 389.4900053795799,
+          "height": 13.9999995
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f1",
+          "fontSize": 14,
+          "hasEOL": false
+        },
+        "id": 0
+      },
+      {
+        "text": "by Awal on May 27th, 2022",
+        "bbox": {
+          "x0": 75.053981775,
+          "y0": 101.83129785000003,
+          "x1": 207.45822942903806,
+          "y1": 112.83129810000003
+        },
+        "dimension": {
+          "width": 132.40424765403804,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 1
+      },
+      {
+        "text": "Everything has an opposite; the universe is meant to be balanced at all times. Nothing is",
+        "bbox": {
+          "x0": 72,
+          "y0": 128.3775626425,
+          "x1": 500.9461335750001,
+          "y1": 139.3775628925
+        },
+        "dimension": {
+          "width": 428.9461335750001,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 2
+      },
+      {
+        "text": "inherently better than something else.",
+        "bbox": {
+          "x0": 72,
+          "y0": 142.92382704250005,
+          "x1": 255.316222324458,
+          "y1": 153.92382729250005
+        },
+        "dimension": {
+          "width": 183.316222324458,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 3
+      },
+      {
+        "text": "While struggling with something, have you ever considered taking a different approach, a",
+        "bbox": {
+          "x0": 72,
+          "y0": 169.4700906424999,
+          "x1": 504.0005333790382,
+          "y1": 180.4700908924999
+        },
+        "dimension": {
+          "width": 432.0005333790382,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 4
+      },
+      {
+        "text": "new angle, or even tackling it from the opposite direction?",
+        "bbox": {
+          "x0": 72,
+          "y0": 184.01635504249995,
+          "x1": 352.46615442903794,
+          "y1": 195.01635529249995
+        },
+        "dimension": {
+          "width": 280.46615442903794,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 5
+      },
+      {
+        "text": "Surely, it is a contradiction—I cannot deny it. But perhaps we are missing the point.",
+        "bbox": {
+          "x0": 72,
+          "y0": 210.56262064250004,
+          "x1": 475.05201957445803,
+          "y1": 221.56262089250004
+        },
+        "dimension": {
+          "width": 403.05201957445803,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 6
+      },
+      {
+        "text": "I want to provide some examples. Did you know about imaginary numbers? They are",
+        "bbox": {
+          "x0": 72,
+          "y0": 237.10889064249997,
+          "x1": 484.415347029038,
+          "y1": 248.10889089249997
+        },
+        "dimension": {
+          "width": 412.415347029038,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 7
+      },
+      {
+        "text": "numbers that are not \"real.\" Imaginary numbers defy the conventional nature of",
+        "bbox": {
+          "x0": 72,
+          "y0": 251.6551550425,
+          "x1": 456.19737214945803,
+          "y1": 262.6551552925
+        },
+        "dimension": {
+          "width": 384.19737214945803,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 8
+      },
+      {
+        "text": "mathematics—how can we represent a negative quantity when measuring geometry?",
+        "bbox": {
+          "x0": 72,
+          "y0": 266.2014200425,
+          "x1": 486.873535629038,
+          "y1": 277.20142029249996
+        },
+        "dimension": {
+          "width": 414.873535629038,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 9
+      },
+      {
+        "text": "Even a precise field like mathematics sometimes requires a different perspective to arrive at",
+        "bbox": {
+          "x0": 72,
+          "y0": 292.7476806425,
+          "x1": 517.9908471494581,
+          "y1": 303.74768089249994
+        },
+        "dimension": {
+          "width": 445.9908471494581,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 10
+      },
+      {
+        "text": "its conclusions; a counterbalancing force is at work.",
+        "bbox": {
+          "x0": 72,
+          "y0": 307.2939450425,
+          "x1": 322.50382707445794,
+          "y1": 318.2939452925
+        },
+        "dimension": {
+          "width": 250.50382707445794,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 11
+      },
+      {
+        "text": "An extreme force will trigger an opposite reaction, restoring balance to the whole.",
+        "bbox": {
+          "x0": 72,
+          "y0": 333.8402106425,
+          "x1": 466.099988599458,
+          "y1": 344.8402108925
+        },
+        "dimension": {
+          "width": 394.099988599458,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 12
+      },
+      {
+        "text": "These writings reflect my personal perspective, drawing from my religious beliefs, Taoism,",
+        "bbox": {
+          "x0": 72,
+          "y0": 360.38647064250006,
+          "x1": 508.3988158994579,
+          "y1": 371.38647089250003
+        },
+        "dimension": {
+          "width": 436.3988158994579,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 13
+      },
+      {
+        "text": "and Stoicism. I do not intend to impose any doctrine or propaganda. After all, why worry",
+        "bbox": {
+          "x0": 72,
+          "y0": 374.9327350425,
+          "x1": 497.8706982750001,
+          "y1": 385.9327352925
+        },
+        "dimension": {
+          "width": 425.8706982750001,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 14
+      },
+      {
+        "text": "about things beyond our control?",
+        "bbox": {
+          "x0": 72,
+          "y0": 389.47900004250005,
+          "x1": 232.11564627903806,
+          "y1": 400.4790002925
+        },
+        "dimension": {
+          "width": 160.11564627903806,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 15
+      },
+      {
+        "text": "Writing this gives me chills, and reading it to myself is part of developing a healthy",
+        "bbox": {
+          "x0": 72,
+          "y0": 416.0252706425,
+          "x1": 469.7461121249999,
+          "y1": 427.02527089250003
+        },
+        "dimension": {
+          "width": 397.7461121249999,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 16
+      },
+      {
+        "text": "habit—gaining control over my own mind. Nothing more, nothing less—a simple form of",
+        "bbox": {
+          "x0": 72,
+          "y0": 430.57153504250005,
+          "x1": 496.61835964945783,
+          "y1": 441.5715352925
+        },
+        "dimension": {
+          "width": 424.61835964945783,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 17
+      },
+      {
+        "text": "self-satisfaction.",
+        "bbox": {
+          "x0": 72,
+          "y0": 445.1178000425,
+          "x1": 150.80992902445792,
+          "y1": 456.1178002925
+        },
+        "dimension": {
+          "width": 78.80992902445793,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 18
+      },
+      {
+        "text": "So, how do we approach a problem? Just note that every creation has two sides. Whenever",
+        "bbox": {
+          "x0": 72,
+          "y0": 471.6640606425,
+          "x1": 518.0449392432521,
+          "y1": 482.6640608925
+        },
+        "dimension": {
+          "width": 446.0449392432521,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 19
+      },
+      {
+        "text": "beauty is evident, ugliness is also defined. When there is a high, a low exists. When light",
+        "bbox": {
+          "x0": 72,
+          "y0": 486.2103250425,
+          "x1": 502.1519955494582,
+          "y1": 497.2103252925
+        },
+        "dimension": {
+          "width": 430.1519955494582,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": true
+        },
+        "id": 20
+      },
+      {
+        "text": "shines, a sharp shadow is cast.",
+        "bbox": {
+          "x0": 72,
+          "y0": 500.75659004249997,
+          "x1": 224.74956252445793,
+          "y1": 511.7565902925
+        },
+        "dimension": {
+          "width": 152.74956252445793,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 21
+      },
+      {
+        "text": "What you resist persists; what you accept transforms.",
+        "bbox": {
+          "x0": 72,
+          "y0": 527.3028606425001,
+          "x1": 332.245403674458,
+          "y1": 538.3028608925001
+        },
+        "dimension": {
+          "width": 260.245403674458,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 22
+      },
+      {
+        "text": "Declare your mindset: the universe is balanced.",
+        "bbox": {
+          "x0": 75.053981775,
+          "y0": 541.8491250425001,
+          "x1": 306.62204307445796,
+          "y1": 552.8491252925
+        },
+        "dimension": {
+          "width": 231.56806129945798,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 23
+      },
+      {
+        "text": "To be continued...",
+        "bbox": {
+          "x0": 72,
+          "y0": 568.3953806425001,
+          "x1": 158.98894129945805,
+          "y1": 579.3953808925
+        },
+        "dimension": {
+          "width": 86.98894129945805,
+          "height": 11.00000025
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f2",
+          "fontSize": 11,
+          "hasEOL": false
+        },
+        "id": 24
+      }
+    ],
+    "lang": "in"
+  }
 }

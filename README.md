@@ -81,6 +81,38 @@ Extracts the text content from the PDF document.
 
 - **Returns:** A promise that resolves with a `Map` of page numbers to their corresponding `PdfTexts`.
 
+Sample return:
+
+```json
+// Map (1)
+{
+  "1": {
+    "words": [
+      {
+        "text": "Opposite Expectation: How to See the World as Two-Sided",
+        "bbox": {
+          "x0": 72,
+          "y0": 83.13183584999996,
+          "x1": 461.4900053795799,
+          "y1": 97.13183534999996
+        },
+        "dimension": {
+          "width": 389.4900053795799,
+          "height": 13.9999995
+        },
+        "metadata": {
+          "direction": "ltr",
+          "fontName": "g_d0_f1",
+          "fontSize": 14,
+          "hasEOL": false
+        },
+        "id": 0
+      }
+    ]
+  }
+}
+```
+
 #### Method: `getLinesFromTexts(pageTexts: PageTexts): PageLines`
 
 Retrieves line information from the page texts.
@@ -101,6 +133,52 @@ Determines whether the PDF appears to be a scanned document.
   - `options` (optional): Thresholds for scanned detection. Defaults to `CONSTANT.WORDS_PER_PAGE_THRESHOLD` and `CONSTANT.TEXT_LENGTH_THRESHOLD`.
 
 - **Returns:** `true` if the PDF is considered scanned; otherwise, `false`.
+
+Sample return:
+
+```json
+// Map (1)
+{
+  "1": [
+    {
+      "bbox": {
+        "x0": 72,
+        "y0": 83.13183584999996,
+        "x1": 461.4900053795799,
+        "y1": 97.13183534999996
+      },
+      "averageFontSize": 14,
+      "dimension": {
+        "width": 389.4900053795799,
+        "height": 13.999999500000001
+      },
+      "words": [
+        {
+          "text": "Opposite Expectation: How to See the World as Two-Sided",
+          "bbox": {
+            "x0": 72,
+            "y0": 83.13183584999996,
+            "x1": 461.4900053795799,
+            "y1": 97.13183534999996
+          },
+          "dimension": {
+            "width": 389.4900053795799,
+            "height": 13.9999995
+          },
+          "metadata": {
+            "direction": "ltr",
+            "fontName": "g_d0_f1",
+            "fontSize": 14,
+            "hasEOL": false
+          },
+          "id": 0
+        }
+      ],
+      "text": "Opposite Expectation: How to See the World as Two-Sided"
+    }
+  ]
+}
+```
 
 ## Contributing
 
