@@ -1,0 +1,49 @@
+{
+  "name": "ppu-pdf",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "bin": {
+    "ppu-pdf": "pdf-reader"
+  },
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot index.ts",
+    "start": "bun run index.ts",
+    "build-ts": "tsc",
+    "copy-pdfjs-worker": "./scripts/copy-pdfjs-worker.sh",
+    "build": "bun run copy-pdfjs-worker && bun build --production index.ts --compile --external 'pdf.worker.min.mjs' --outfile pdf-reader"
+  },
+  "files": [
+    "dist",
+    "pdf-reader"
+  ],
+  "keywords": [
+    "pdf-reader",
+    "text-extraction",
+    "pdf-rag",
+    "bbox",
+    "pdf",
+    "pdf-typescript",
+    "bun",
+    "pdf-digital",
+    "pdfjs"
+  ],
+  "author": "snowfluke",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PT-Perkasa-Pilar-Utama/ppu-pdf.git"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "pdfjs": "^2.5.3",
+    "pdfjs-dist": "^4.10.38"
+  }
+}
