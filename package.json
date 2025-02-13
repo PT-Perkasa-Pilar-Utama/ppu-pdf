@@ -11,8 +11,10 @@
     "dev": "bun run --hot index.ts",
     "start": "bun run index.ts",
     "build-ts": "tsc",
-    "copy-pdfjs-worker": "./scripts/copy-pdfjs-worker.sh",
-    "build": "bun run copy-pdfjs-worker && bun build --production index.ts --compile --external 'pdf.worker.min.mjs' --outfile pdf-reader"
+    "example": "bun run src/pdf.example.ts",
+    "copy-pdfjs-worker": "bash ./scripts/copy-pdfjs-worker.sh",
+    "build": "bun run copy-pdfjs-worker && bun build --production index.ts --compile --external 'pdf.worker.min.mjs' --outfile pdf-reader",
+    "deploy": "bun test && bun build-ts && bun build"
   },
   "files": [
     "dist",
