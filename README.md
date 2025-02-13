@@ -1,6 +1,3 @@
-Below is an example of a comprehensive README file for the project:
-
-````md
 # ppu-pdf
 
 Easily extract text from digital PDF files with coordinate and font size included, and optionally group text by lines.
@@ -19,7 +16,6 @@ Install the package via npm:
 ```bash
 npm install ppu-pdf
 ```
-````
 
 Or using Yarn:
 
