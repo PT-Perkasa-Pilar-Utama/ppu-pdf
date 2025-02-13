@@ -1,10 +1,7 @@
 {
   "name": "ppu-pdf",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "dist/index.js",
-  "bin": {
-    "ppu-pdf": "pdf-reader"
-  },
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
@@ -13,8 +10,8 @@
     "build-ts": "tsc",
     "example": "bun run src/pdf.example.ts",
     "copy-pdfjs-worker": "bash ./scripts/copy-pdfjs-worker.sh",
-    "build": "bun run copy-pdfjs-worker && bun build --production index.ts --compile --external 'pdf.worker.min.mjs' --outfile pdf-reader",
-    "deploy": "bun test && bun build-ts && bun build"
+    "build-exec": "bun run copy-pdfjs-worker && bun build --production index.ts --compile --external 'pdf.worker.min.mjs' --outfile pdf-reader",
+    "release": "bun run copy-pdfjs-worker && bun test && bun build-ts"
   },
   "files": [
     "dist",
