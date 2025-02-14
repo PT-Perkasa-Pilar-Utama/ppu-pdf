@@ -1,6 +1,6 @@
 {
   "name": "ppu-pdf",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,6 @@
     "start": "bun run index.ts",
     "build:npm": "bun build --target=node ./index.ts --outfile=dist/index.js && bun run build:declaration",
     "build:declaration": "tsc --emitDeclarationOnly --project tsconfig.types.json",
-    "postbuild": "rimraf tsconfig.types.tsbuildinfo",
     "example": "bun run src/pdf.example.ts",
     "copy-pdfjs-worker": "bash ./scripts/copy-pdfjs-worker.sh",
     "build:exec": "bun run copy-pdfjs-worker && bun build --production index.ts --compile --external 'pdf.worker.min.mjs' --outfile pdf-reader",
