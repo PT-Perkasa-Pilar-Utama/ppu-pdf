@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define source and destination paths
-SRC="index.d.ts"
+SRC="src/index.d.ts"
 DEST="dist/index.d.ts"
 
 SRC_WORKER="node_modules/pdfjs-dist/build/pdf.worker.min.mjs"

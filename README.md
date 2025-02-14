@@ -204,8 +204,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 If you encounter any issues or have suggestions, please open an issue in the repository.
 
 Happy coding!
-
-```
-
-This README covers the key aspects of installing, using, and contributing to the project, making it easier for others to get started with and contribute to `ppu-pdf`.
-```
