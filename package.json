@@ -2,7 +2,7 @@
   "name": "ppu-pdf",
   "version": "1.0.4",
   "main": "dist/index.js",
-  "module": "index.ts",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
