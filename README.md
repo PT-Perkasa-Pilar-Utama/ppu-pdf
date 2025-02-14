@@ -25,6 +25,12 @@ Or using Yarn:
 yarn add ppu-pdf
 ```
 
+Bun:
+
+```bash
+bun add ppu-pdf
+```
+
 ## Usage
 
 Below is an example of how to use the library with Bun:
