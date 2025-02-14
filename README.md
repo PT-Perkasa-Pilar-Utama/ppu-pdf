@@ -11,6 +11,8 @@ Easily extract text from digital PDF files with coordinate and font size include
 
 ## Installation
 
+Note: Using Bun is recommended, im tired getting `Error [ERR_REQUIRE_ESM]: require() of ES Module` or somebody wants to patch it, feel free to open a pull request
+
 Install the package via npm:
 
 ```bash
@@ -36,11 +38,10 @@ const file = Bun.file("./src/assets/opposite-expectation.pdf");
 const buffer = await file.arrayBuffer();
 const pdf = await pdfReader.open(buffer);
 
+// remember it's a map
 const texts = await pdfReader.getTexts(pdf);
-console.log("texts: ", texts);
-
-const lines = pdfReader.getLinesFromTexts(texts);
-console.log("lines: ", lines);
+const page1texts = texts.get(1);
+console.log("texts: ", page1texts);
 
 const isScanned = pdfReader.isScanned(texts);
 console.log("is pdf scanned: ", isScanned);
