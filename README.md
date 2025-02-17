@@ -107,7 +107,8 @@ Sample return:
           "direction": "ltr",
           "fontName": "g_d0_f1",
           "fontSize": 14,
-          "hasEOL": false
+          "hasEOL": false,
+          "pageNum": 1
         },
         "id": 0
       }
@@ -172,7 +173,8 @@ Sample return:
             "direction": "ltr",
             "fontName": "g_d0_f1",
             "fontSize": 14,
-            "hasEOL": false
+            "hasEOL": false,
+            "pageNum": 1
           },
           "id": 0
         }
