@@ -108,8 +108,7 @@ export class PdfReader {
       const scale = x / token.transform[4];
 
       const pdfWord: PdfWord = {
-        // todo raw
-        text: token.str,
+        text: !this.options.raw ? this.normalizedText(token.str) : token.str,
         bbox: {
           x0: x,
           y0: y - token.height * scale,
@@ -368,5 +367,18 @@ export class PdfReader {
     const isTextLengthBelowThreshold = fullText.length < options.textLength;
 
     return isWordsBelowThreshold || isTextLengthBelowThreshold;
+  }
+
+  private normalizedText(str: string): string {
+    // Match patterns where single letters are separated by spaces
+    // This will match strings like "S U M M A R Y" or "T E X T"
+    const spacedLetterPattern = /^([A-Z]\s)+[A-Z]$/;
+
+    if (spacedLetterPattern.test(str)) {
+      // Remove all spaces to get "SUMMARY" from "S U M M A R Y"
+      return str.replace(/\s/g, "");
+    }
+
+    return str;
   }
 }
