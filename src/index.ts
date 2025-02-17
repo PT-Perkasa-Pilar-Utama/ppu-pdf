@@ -73,7 +73,11 @@ export class PdfReader {
     const { height, transform } = page.getViewport({ scale: 1 });
     const pdfToken = await page.getTextContent();
 
-    const textsMapped = this.mapTokenToPdfWord(pdfToken.items, transform);
+    const textsMapped = this.mapTokenToPdfWord(
+      pdfToken.items,
+      transform,
+      pageNum
+    );
 
     const textsSorted = this.sortTextContent(textsMapped);
     const textsMerged = this.mergeTextContent(textsSorted);
@@ -88,7 +92,8 @@ export class PdfReader {
 
   private mapTokenToPdfWord(
     items: (TextItem | TextMarkedContent)[],
-    transform: number[]
+    transform: number[],
+    pageNum: number
   ): PdfWord[] {
     let pdfWords: PdfWord[] = [];
 
@@ -120,6 +125,7 @@ export class PdfReader {
           fontName: token.fontName,
           fontSize: Number(token.height.toFixed(4)),
           hasEOL: token.hasEOL,
+          pageNum,
         },
       };
 
@@ -212,6 +218,7 @@ export class PdfReader {
             direction: metadata.direction,
             fontName: metadata.fontName,
             hasEOL: metadata.hasEOL,
+            pageNum: metadata.pageNum,
           },
         };
       } else {

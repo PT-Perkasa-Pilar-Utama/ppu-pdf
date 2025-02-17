@@ -20,6 +20,7 @@ export interface PdfMetadata {
   fontName: string;
   fontSize: number;
   hasEOL: boolean;
+  pageNum: number;
 }
 
 export interface PdfDimension {
