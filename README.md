@@ -174,15 +174,16 @@ Sample return:
 }
 ```
 
-#### Method: `getCompactLinesFromTexts(pageTexts: PageTexts): CompactPageLines`
+#### Method: `getCompactLinesFromTexts(pageTexts: PageTexts, algorithm: PdfCompactLineAlgorithm = PdfCompactLineAlgorithm.MiddleY): CompactPageLines`
 
-Retrieves simple and compact version of line information from the page texts.
+Retrieves a compact representation of line information from the page texts using the specified algorithm.
 
 - **Parameters:**
 
   - `pageTexts`: A `Map` of page numbers to their corresponding `PdfTexts`.
+  - `algorithm`: An optional `PdfCompactLineAlgorithm` specifying the method for grouping lines. Defaults to `MiddleY`.
 
-- **Returns:** A `Map` of page numbers to an array of `CompactPdfLine` objects.
+- **Returns:** A `Map` of page numbers to an array of `CompactPdfLine` objects, where the line extraction method depends on the chosen algorithm.
 
 Sample return:
 

@@ -8,16 +8,18 @@ import type {
 } from "pdfjs-dist/types/src/display/api";
 import type { PDFPageProxy } from "pdfjs-dist/types/web/interfaces";
 import { CONSTANT } from "./pdf.constant";
-import type {
-  CompactPageLines,
-  CompactPdfLine,
-  PageLines,
-  PageTexts,
-  PdfLine,
-  PdfReaderOptions,
-  PdfScannedThreshold,
-  PdfToken,
-  PdfWord,
+import {
+  PdfCompactLineAlgorithm,
+  type CompactPageLines,
+  type CompactPdfLine,
+  type CompactPdfWord,
+  type PageLines,
+  type PageTexts,
+  type PdfLine,
+  type PdfReaderOptions,
+  type PdfScannedThreshold,
+  type PdfToken,
+  type PdfWord,
 } from "./pdf.interface";
 
 GlobalWorkerOptions.workerSrc = "./pdf.worker.min.mjs";
@@ -341,7 +343,10 @@ export class PdfReader {
     return mergedLines;
   }
 
-  getCompactLinesFromTexts(pageTexts: PageTexts): CompactPageLines {
+  getCompactLinesFromTexts(
+    pageTexts: PageTexts,
+    algorithm: PdfCompactLineAlgorithm = PdfCompactLineAlgorithm.MiddleY
+  ): CompactPageLines {
     const pageLines: CompactPageLines = new Map();
     const numOfPages = pageTexts.size;
 
@@ -349,7 +354,11 @@ export class PdfReader {
       const pdfText = pageTexts.get(i);
       let lines: CompactPdfLine[] = [];
       if (pdfText) {
-        lines = this.getCompactLines(pdfText.words);
+        if (algorithm == PdfCompactLineAlgorithm.Y0) {
+          lines = this.getCompactLinesOldAlgorithm(pdfText.words);
+        } else {
+          lines = this.getCompactLines(pdfText.words);
+        }
       }
       pageLines.set(i, lines);
     }
@@ -407,6 +416,51 @@ export class PdfReader {
         bbox: { x0, y0, x1, y1 },
         words: lineWords.map((word) => ({ text: word.text, bbox: word.bbox })),
         text: lineWords.map((word) => word.text).join(" "),
+      };
+    });
+
+    return mergedLines;
+  }
+
+  private getCompactLinesOldAlgorithm(words: PdfWord[] = []): CompactPdfLine[] {
+    const lines: PdfWord[][] = [];
+    for (const word of words) {
+      const line = lines.find(
+        (l) => Math.abs(l[0].bbox.y0 - word.bbox.y0) <= 5
+      );
+
+      if (line) {
+        line.push(word);
+      } else {
+        lines.push([word]);
+      }
+    }
+
+    const linesMerged = this.mergeCompactLinesOldAlgorithm(lines);
+    return linesMerged;
+  }
+
+  private mergeCompactLinesOldAlgorithm(lines: PdfWord[][]): CompactPdfLine[] {
+    const mergedLines: CompactPdfLine[] = lines.map((line) => {
+      let x0 = Infinity;
+      let y0 = Infinity;
+      let x1 = 0;
+      let y1 = 0;
+      let words: CompactPdfWord[] = [];
+
+      line = line.sort((a, b) => a.bbox.x0 - b.bbox.x0);
+
+      for (const word of line) {
+        x0 = Math.min(x0, word.bbox.x0);
+        y0 = Math.min(y0, word.bbox.y0);
+        x1 = Math.max(x1, word.bbox.x1);
+        y1 = Math.max(y1, word.bbox.y1);
+        words.push(word);
+      }
+      return {
+        bbox: { x0, y0, x1, y1 },
+        words,
+        text: words.map((word) => word.text).join(" "),
       };
     });
 
