@@ -365,10 +365,12 @@ export class PdfReader {
       const pdfText = pageTexts.get(i);
       let lines: CompactPdfLine[] = [];
       if (pdfText) {
+        const mappedCompactWords = this.mapWordsToCompactWords(pdfText.words);
+
         if (algorithm == "y0") {
-          lines = this.getCompactLinesOldAlgorithm(pdfText.words);
+          lines = this.getCompactLinesOldAlgorithm(mappedCompactWords);
         } else {
-          lines = this.getCompactLines(pdfText.words);
+          lines = this.getCompactLines(mappedCompactWords);
         }
       }
       pageLines.set(i, lines);
@@ -377,8 +379,12 @@ export class PdfReader {
     return pageLines;
   }
 
-  private getCompactLines(words: PdfWord[] = []): CompactPdfLine[] {
-    const lineGroups: PdfWord[][] = [];
+  private mapWordsToCompactWords(words: PdfWord[] = []): CompactPdfWord[] {
+    return words.map((word) => ({ text: word.text, bbox: word.bbox }));
+  }
+
+  private getCompactLines(words: CompactPdfWord[] = []): CompactPdfLine[] {
+    const lineGroups: CompactPdfWord[][] = [];
 
     for (const word of words) {
       let appended = false;
@@ -407,7 +413,7 @@ export class PdfReader {
     return this.mergeCompactLines(lineGroups);
   }
 
-  private mergeCompactLines(lines: PdfWord[][]): CompactPdfLine[] {
+  private mergeCompactLines(lines: CompactPdfWord[][]): CompactPdfLine[] {
     const mergedLines: CompactPdfLine[] = lines.map((lineWords) => {
       let x0 = Infinity;
       let y0 = Infinity;
@@ -433,8 +439,10 @@ export class PdfReader {
     return mergedLines;
   }
 
-  private getCompactLinesOldAlgorithm(words: PdfWord[] = []): CompactPdfLine[] {
-    const lines: PdfWord[][] = [];
+  private getCompactLinesOldAlgorithm(
+    words: CompactPdfWord[] = []
+  ): CompactPdfLine[] {
+    const lines: CompactPdfWord[][] = [];
     for (const word of words) {
       const line = lines.find(
         (l) => Math.abs(l[0].bbox.y0 - word.bbox.y0) <= 5
@@ -451,7 +459,9 @@ export class PdfReader {
     return linesMerged;
   }
 
-  private mergeCompactLinesOldAlgorithm(lines: PdfWord[][]): CompactPdfLine[] {
+  private mergeCompactLinesOldAlgorithm(
+    lines: CompactPdfWord[][]
+  ): CompactPdfLine[] {
     const mergedLines: CompactPdfLine[] = lines.map((line) => {
       let x0 = Infinity;
       let y0 = Infinity;
