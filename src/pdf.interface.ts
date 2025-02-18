@@ -73,10 +73,7 @@ export interface PdfReaderOptions {
   footerFromHeightPercentage?: number;
 }
 
-export enum PdfCompactLineAlgorithm {
-  MiddleY,
-  Y0,
-}
+export type PdfCompactLineAlgorithm = "middleY" | "y0";
 
 export interface PdfScannedThreshold {
   wordsPerPage: number;
