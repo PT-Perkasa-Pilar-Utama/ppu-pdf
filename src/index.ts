@@ -9,6 +9,8 @@ import type {
 import type { PDFPageProxy } from "pdfjs-dist/types/web/interfaces";
 import { CONSTANT } from "./pdf.constant";
 import type {
+  CompactPageLines,
+  CompactPdfLine,
   PageLines,
   PageTexts,
   PdfLine,
@@ -332,6 +334,78 @@ export class PdfReader {
         averageFontSize,
         dimension,
         words: lineWords,
+        text: lineWords.map((word) => word.text).join(" "),
+      };
+    });
+
+    return mergedLines;
+  }
+
+  getCompactLinesFromTexts(pageTexts: PageTexts): CompactPageLines {
+    const pageLines: CompactPageLines = new Map();
+    const numOfPages = pageTexts.size;
+
+    for (let i = 1; i <= numOfPages; i++) {
+      const pdfText = pageTexts.get(i);
+      let lines: CompactPdfLine[] = [];
+      if (pdfText) {
+        lines = this.getCompactLines(pdfText.words);
+      }
+      pageLines.set(i, lines);
+    }
+
+    return pageLines;
+  }
+
+  private getCompactLines(words: PdfWord[] = []): CompactPdfLine[] {
+    const lineGroups: PdfWord[][] = [];
+
+    for (const word of words) {
+      let appended = false;
+
+      for (const line of lineGroups) {
+        let currentY0 = Infinity;
+        let currentY1 = -Infinity;
+        for (const w of line) {
+          currentY0 = Math.min(currentY0, w.bbox.y0);
+          currentY1 = Math.max(currentY1, w.bbox.y1);
+        }
+        const midY = (currentY0 + currentY1) / 2;
+
+        if (word.bbox.y0 <= midY && word.bbox.y1 >= midY) {
+          line.push(word);
+          appended = true;
+          break;
+        }
+      }
+
+      if (!appended) {
+        lineGroups.push([word]);
+      }
+    }
+
+    return this.mergeCompactLines(lineGroups);
+  }
+
+  private mergeCompactLines(lines: PdfWord[][]): CompactPdfLine[] {
+    const mergedLines: CompactPdfLine[] = lines.map((lineWords) => {
+      let x0 = Infinity;
+      let y0 = Infinity;
+      let x1 = -Infinity;
+      let y1 = -Infinity;
+
+      for (const word of lineWords) {
+        x0 = Math.min(x0, word.bbox.x0);
+        y0 = Math.min(y0, word.bbox.y0);
+        x1 = Math.max(x1, word.bbox.x1);
+        y1 = Math.max(y1, word.bbox.y1);
+      }
+
+      lineWords.sort((a, b) => a.bbox.x0 - b.bbox.x0);
+
+      return {
+        bbox: { x0, y0, x1, y1 },
+        words: lineWords.map((word) => ({ text: word.text, bbox: word.bbox })),
         text: lineWords.map((word) => word.text).join(" "),
       };
     });

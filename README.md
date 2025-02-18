@@ -127,17 +127,6 @@ Retrieves line information from the page texts.
 
 - **Returns:** A `Map` of page numbers to an array of `PdfLine` objects.
 
-#### Method: `isScanned(pageTexts: PageTexts, options?: PdfScannedThreshold): boolean`
-
-Determines whether the PDF appears to be a scanned document.
-
-- **Parameters:**
-
-  - `pageTexts`: A `Map` of page numbers to their corresponding `PdfTexts`.
-  - `options` (optional): Thresholds for scanned detection. Defaults to `CONSTANT.WORDS_PER_PAGE_THRESHOLD` and `CONSTANT.TEXT_LENGTH_THRESHOLD`.
-
-- **Returns:** `true` if the PDF is considered scanned; otherwise, `false`.
-
 Sample return:
 
 ```json
@@ -184,6 +173,57 @@ Sample return:
   ]
 }
 ```
+
+#### Method: `getCompactLinesFromTexts(pageTexts: PageTexts): CompactPageLines`
+
+Retrieves simple and compact version of line information from the page texts.
+
+- **Parameters:**
+
+  - `pageTexts`: A `Map` of page numbers to their corresponding `PdfTexts`.
+
+- **Returns:** A `Map` of page numbers to an array of `CompactPdfLine` objects.
+
+Sample return:
+
+```json
+// Map (1)
+{
+  "1": [
+    {
+      "bbox": {
+        "x0": 72,
+        "y0": 83.13183584999996,
+        "x1": 461.4900053795799,
+        "y1": 97.13183534999996
+      },
+      "words": [
+        {
+          "text": "Opposite Expectation: How to See the World as Two-Sided",
+          "bbox": {
+            "x0": 72,
+            "y0": 83.13183584999996,
+            "x1": 461.4900053795799,
+            "y1": 97.13183534999996
+          }
+        }
+      ],
+      "text": "Opposite Expectation: How to See the World as Two-Sided"
+    }
+  ]
+}
+```
+
+#### Method: `isScanned(pageTexts: PageTexts, options?: PdfScannedThreshold): boolean`
+
+Determines whether the PDF appears to be a scanned document.
+
+- **Parameters:**
+
+  - `pageTexts`: A `Map` of page numbers to their corresponding `PdfTexts`.
+  - `options` (optional): Thresholds for scanned detection. Defaults to `CONSTANT.WORDS_PER_PAGE_THRESHOLD` and `CONSTANT.TEXT_LENGTH_THRESHOLD`.
+
+- **Returns:** `true` if the PDF is considered scanned; otherwise, `false`.
 
 ## Contributing
 

@@ -51,6 +51,19 @@ export interface PdfLine {
 export type PageTexts = Map<number, PdfTexts>;
 export type PageLines = Map<number, PdfLine[]>;
 
+export interface CompactPdfWord {
+  text: string;
+  bbox: PdfBbox;
+}
+
+export interface CompactPdfLine {
+  text: string;
+  bbox: PdfBbox;
+  words: CompactPdfWord[];
+}
+
+export type CompactPageLines = Map<number, CompactPdfLine[]>;
+
 export interface PdfReaderOptions {
   verbose?: boolean;
   excludeFooter?: boolean;
