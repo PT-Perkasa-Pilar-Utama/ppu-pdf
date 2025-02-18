@@ -71,6 +71,8 @@ export interface PdfReaderOptions {
   raw?: boolean;
   headerFromHeightPercentage?: number;
   footerFromHeightPercentage?: number;
+  mergeCloseTextNeighbor?: boolean;
+  simpleSortAlgorithm?: boolean;
 }
 
 export type PdfCompactLineAlgorithm = "middleY" | "y0";

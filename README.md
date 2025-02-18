@@ -53,6 +53,29 @@ const isScanned = pdfReader.isScanned(texts);
 console.log("is pdf scanned: ", isScanned);
 ```
 
+## `PdfReaderOptions`
+
+Configuration options for `PdfReader`, allowing customization of PDF text extraction behavior.
+
+| Option                       | Type      | Default Value                            | Description                                                                 |
+| ---------------------------- | --------- | ---------------------------------------- | --------------------------------------------------------------------------- |
+| `verbose`                    | `boolean` | `false`                                  | Enables logging for debugging purposes.                                     |
+| `excludeFooter`              | `boolean` | `true`                                   | Excludes detected footer text from the extracted content.                   |
+| `excludeHeader`              | `boolean` | `true`                                   | Excludes detected header text from the extracted content.                   |
+| `raw`                        | `boolean` | `false`                                  | If `true`, returns raw text without additional processing.                  |
+| `headerFromHeightPercentage` | `number`  | `CONSTANT.HEADER_FROM_HEIGHT_PERCENTAGE` | Defines the height percentage from the top used to identify header text.    |
+| `footerFromHeightPercentage` | `number`  | `CONSTANT.FOOTER_FROM_HEIGHT_PERCENTAGE` | Defines the height percentage from the bottom used to identify footer text. |
+| `mergeCloseTextNeighbor`     | `boolean` | `true`                                   | Merges text elements that are close to each other into a single entity.     |
+| `simpleSortAlgorithm`        | `boolean` | `false`                                  | Uses a simplified sorting algorithm for text positioning.                   |
+
+### Usage Example:
+
+```typescript
+const reader = new PdfReader({ verbose: true, excludeFooter: false });
+```
+
+These options allow fine-tuned control over how text is extracted and processed from PDFs.
+
 ## Method Documentation
 
 ### `PdfReader` Class

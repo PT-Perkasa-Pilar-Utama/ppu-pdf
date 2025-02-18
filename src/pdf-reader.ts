@@ -31,6 +31,8 @@ const defaultOptions: PdfReaderOptions = {
   raw: false,
   headerFromHeightPercentage: CONSTANT.HEADER_FROM_HEIGHT_PERCENTAGE,
   footerFromHeightPercentage: CONSTANT.FOOTER_FROM_HEIGHT_PERCENTAGE,
+  mergeCloseTextNeighbor: true,
+  simpleSortAlgorithm: false,
 };
 
 export class PdfReader {
@@ -83,8 +85,13 @@ export class PdfReader {
       pageNum
     );
 
-    const textsSorted = this.sortTextContent(textsMapped);
-    const textsMerged = this.mergeTextContent(textsSorted);
+    const textsSorted = this.options.simpleSortAlgorithm
+      ? this.sortTextContentSimple(textsMapped)
+      : this.sortTextContent(textsMapped);
+
+    const textsMerged = this.options.mergeCloseTextNeighbor
+      ? this.mergeTextContent(textsSorted)
+      : textsSorted;
 
     const textsFiltered = this.filterTextContent(textsMerged, height);
 
@@ -153,6 +160,10 @@ export class PdfReader {
 
       return a.bbox.y0 - b.bbox.y0;
     });
+  }
+
+  private sortTextContentSimple(texts: PdfWord[]): PdfWord[] {
+    return texts.sort((a, b) => a.bbox.y0 - b.bbox.y0 || a.bbox.x0 - b.bbox.x0);
   }
 
   private mergeTextContent(texts: PdfWord[]): PdfWord[] {
