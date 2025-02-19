@@ -57,16 +57,16 @@ console.log("is pdf scanned: ", isScanned);
 
 Configuration options for `PdfReader`, allowing customization of PDF text extraction behavior.
 
-| Option                       | Type      | Default Value                            | Description                                                                 |
-| ---------------------------- | --------- | ---------------------------------------- | --------------------------------------------------------------------------- |
-| `verbose`                    | `boolean` | `false`                                  | Enables logging for debugging purposes.                                     |
-| `excludeFooter`              | `boolean` | `true`                                   | Excludes detected footer text from the extracted content.                   |
-| `excludeHeader`              | `boolean` | `true`                                   | Excludes detected header text from the extracted content.                   |
-| `raw`                        | `boolean` | `false`                                  | If `true`, returns raw text without additional processing.                  |
-| `headerFromHeightPercentage` | `number`  | `CONSTANT.HEADER_FROM_HEIGHT_PERCENTAGE` | Defines the height percentage from the top used to identify header text.    |
-| `footerFromHeightPercentage` | `number`  | `CONSTANT.FOOTER_FROM_HEIGHT_PERCENTAGE` | Defines the height percentage from the bottom used to identify footer text. |
-| `mergeCloseTextNeighbor`     | `boolean` | `true`                                   | Merges text elements that are close to each other into a single entity.     |
-| `simpleSortAlgorithm`        | `boolean` | `false`                                  | Uses a simplified sorting algorithm for text positioning.                   |
+| Option                       | Type      | Default Value | Description                                                                 |
+| ---------------------------- | --------- | ------------- | --------------------------------------------------------------------------- |
+| `verbose`                    | `boolean` | `false`       | Enables logging for debugging purposes.                                     |
+| `excludeFooter`              | `boolean` | `true`        | Excludes detected footer text from the extracted content.                   |
+| `excludeHeader`              | `boolean` | `true`        | Excludes detected header text from the extracted content.                   |
+| `raw`                        | `boolean` | `false`       | If `true`, returns raw text without additional processing.                  |
+| `headerFromHeightPercentage` | `number`  | `0.02`        | Defines the height percentage from the top used to identify header text.    |
+| `footerFromHeightPercentage` | `number`  | `0.95`        | Defines the height percentage from the bottom used to identify footer text. |
+| `mergeCloseTextNeighbor`     | `boolean` | `true`        | Merges text elements that are close to each other into a single entity.     |
+| `simpleSortAlgorithm`        | `boolean` | `false`       | Uses a simplified sorting algorithm for text positioning.                   |
 
 ### Usage Example:
 
@@ -197,14 +197,14 @@ Sample return:
 }
 ```
 
-#### Method: `getCompactLinesFromTexts(pageTexts: PageTexts, algorithm: PdfCompactLineAlgorithm = PdfCompactLineAlgorithm.MiddleY): CompactPageLines`
+#### Method: `getCompactLinesFromTexts(pageTexts: PageTexts, algorithm: PdfCompactLineAlgorithm = "middleY"): CompactPageLines`
 
 Retrieves a compact representation of line information from the page texts using the specified algorithm.
 
 - **Parameters:**
 
   - `pageTexts`: A `Map` of page numbers to their corresponding `PdfTexts`.
-  - `algorithm`: An optional `PdfCompactLineAlgorithm` specifying the method for grouping lines. Defaults to `MiddleY`.
+  - `algorithm`: An optional `PdfCompactLineAlgorithm` specifying the method for grouping lines. Defaults to `middleY`.
 
 - **Returns:** A `Map` of page numbers to an array of `CompactPdfLine` objects, where the line extraction method depends on the chosen algorithm.
 
