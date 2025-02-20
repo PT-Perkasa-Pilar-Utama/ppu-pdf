@@ -1,9 +1,10 @@
 {
   "name": "ppu-pdf",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "description": "Easily extract text from digital PDF files with coordinate and font size included, and optionally group text by lines.",
   "type": "module",
   "scripts": {
     "dev": "bun run --hot index.ts",

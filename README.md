@@ -2,6 +2,8 @@
 
 Easily extract text from digital PDF files with coordinate and font size included, and optionally group text by lines.
 
+For headless option (without default pdfjs instance) go checkout ppu-pdf-headless: https://www.npmjs.com/package/ppu-pdf-headless
+
 ## Features
 
 - **Text Extraction:** Retrieve all text content from a PDF.
