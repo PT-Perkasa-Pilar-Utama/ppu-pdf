@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { PdfReader } from ".";
+import { PdfReader } from "../src/pdf-reader";
 
 const pdfReader = new PdfReader();
 const file = Bun.file("./src/assets/opposite-expectation.pdf");

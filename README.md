@@ -279,3 +279,35 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 If you encounter any issues or have suggestions, please open an issue in the repository.
 
 Happy coding!
+
+## Scripts
+
+Recommended development environment is in linux-based environment. Library template: https://github.com/aquapi/lib-template
+
+All script sources and usage.
+
+### [Build](./scripts/build.ts)
+
+Emit `.js` and `.d.ts` files to [`lib`](./lib).
+
+### [Publish](./scripts/publish.ts)
+
+Move [`package.json`](./package.json), [`README.md`](./README.md) to [`lib`](./lib) and publish the package.
+
+### [Bench](./scripts/bench.ts)
+
+Run files that ends with `.bench.ts` extension.
+
+To run a specific file.
+
+```bash
+bun bench index # Run bench/index.bench.ts
+```
+
+To run the benchmark in `node`, add a `--node` parameter
+
+```bash
+bun bench --node
+
+bun bench --node index # Run bench/index.bench.ts with node
+```

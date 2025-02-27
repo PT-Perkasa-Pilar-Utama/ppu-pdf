@@ -2,7 +2,7 @@
 
 # Define source and destination paths
 SRC="node_modules/pdfjs-dist/build/pdf.worker.min.mjs"
-DEST="./pdf.worker.min.mjs"
+DEST="./src/pdf.worker.min.mjs"
 
 # Check if source file exists
 if [[ ! -f "$SRC" ]]; then

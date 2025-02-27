@@ -42,7 +42,7 @@ export class PdfReader {
     this.options = { ...defaultOptions, ...options };
   }
 
-  async open(filename: string | ArrayBuffer) {
+  async open(filename: string | ArrayBuffer): Promise<PDFDocumentProxy> {
     let data: Uint8Array<ArrayBuffer>;
 
     if (typeof filename == "string") {

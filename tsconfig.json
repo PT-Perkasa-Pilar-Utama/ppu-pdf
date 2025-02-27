@@ -1,28 +1,30 @@
 {
   "compilerOptions": {
     // Enable latest features
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleDetection": "force",
-    "jsx": "react-jsx",
-    "allowJs": true,
-
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     // Bundler mode
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    "moduleResolution": "Bundler",
     "verbatimModuleSyntax": true,
-    "noEmit": true,
-
     // Best practices
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
-
-    // Some stricter flags (disabled by default)
+    // Some stricter flags
     "noUnusedLocals": false,
-    "outDir": "./dist",
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitThis": true,
     "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
+    "noPropertyAccessFromIndexSignature": false,
+    // Declaration options
+    "declaration": true,
+    "declarationDir": "lib",
+    "stripInternal": true,
+    "isolatedDeclarations": true
   }
 }

@@ -1,27 +1,7 @@
 {
   "name": "ppu-pdf",
-  "version": "1.0.20",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "version": "2.0.1",
   "description": "Easily extract text from digital PDF files with coordinate and font size included, and optionally group text by lines.",
-  "type": "module",
-  "scripts": {
-    "dev": "bun run --hot index.ts",
-    "start": "bun run index.ts",
-    "build:npm": "bun build --target=node ./src/index.ts --outfile=dist/index.js && bun build:declaration && bun copy-worker-npm",
-    "build:declaration": "tsc --emitDeclarationOnly --project tsconfig.types.json",
-    "example": "bun run src/pdf.example.ts",
-    "copy-pdfjs-worker": "bash ./scripts/copy-pdfjs-worker.sh",
-    "copy-worker-npm": "bash ./scripts/copy-worker-npm.sh",
-    "build:exec": "bun run copy-pdfjs-worker && bun build --production index.ts --compile --external 'pdf.worker.min.mjs' --outfile pdf-reader",
-    "release": "bun run copy-pdfjs-worker && bun build:npm"
-  },
-  "files": [
-    "dist/*.js",
-    "dist/*.mjs",
-    "dist/*.d.ts"
-  ],
   "keywords": [
     "pdf-reader",
     "text-extraction",
@@ -35,19 +15,35 @@
   ],
   "author": "snowfluke",
   "license": "MIT",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "scripts": {
+    "task": "bun scripts/task.ts",
+    "build:test": "bun task build && bun test",
+    "build:publish": "bun task build && bun task report-size && bun task publish",
+    "lint": "eslint ./src",
+    "lint:fix": "eslint ./src --fix",
+    "copy:worker": "./scripts/copy-worker.sh"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "latest",
+    "@types/bun": "latest",
+    "@types/pdfjs-dist": "^2.10.378",
+    "@types/uglify-js": "latest",
+    "eslint": "latest",
+    "eslint-plugin-jsdoc": "latest",
+    "mitata": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "typescript-eslint": "latest",
+    "uglify-js": "latest"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/PT-Perkasa-Pilar-Utama/ppu-pdf.git"
   },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5.0.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
   "dependencies": {
-    "pdfjs": "^2.5.3",
     "pdfjs-dist": "^4.10.38"
   }
 }
