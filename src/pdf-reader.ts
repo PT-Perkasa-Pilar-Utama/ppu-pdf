@@ -1,14 +1,34 @@
-import { readFileSync } from "fs";
-import type { PDFDocumentProxy } from "pdfjs-dist";
-import { getDocument, GlobalWorkerOptions, Util } from "pdfjs-dist";
+declare global {
+  namespace NodeJS {
+    interface Process {
+      getBuiltinModule(name: string): any;
+    }
+  }
+}
+
+if (!process?.getBuiltinModule) {
+  process.getBuiltinModule = (name: any) => {
+    return require(name);
+  };
+}
+
+import { createWriteStream, readFileSync } from "fs";
+
+import { Canvas, createCanvas, Image, ImageData } from "canvas";
+import { JSDOM } from "jsdom";
+import type { PDFDocumentProxy, Util } from "pdfjs-dist";
+
 import type {
   DocumentInitParameters,
   TextItem,
   TextMarkedContent,
 } from "pdfjs-dist/types/src/display/api";
 import type { PDFPageProxy } from "pdfjs-dist/types/web/interfaces";
+
+import { NodeCanvasFactory } from "./canvas-factory";
 import { CONSTANT } from "./pdf.constant";
 import {
+  type CanvasMap,
   type CompactPageLines,
   type CompactPdfLine,
   type CompactPdfWord,
@@ -22,8 +42,6 @@ import {
   type PdfWord,
 } from "./pdf.interface";
 
-GlobalWorkerOptions.workerSrc = "./pdf.worker.min.mjs";
-
 const defaultOptions: PdfReaderOptions = {
   verbose: false,
   excludeFooter: true,
@@ -33,16 +51,45 @@ const defaultOptions: PdfReaderOptions = {
   footerFromHeightPercentage: CONSTANT.FOOTER_FROM_HEIGHT_PERCENTAGE,
   mergeCloseTextNeighbor: true,
   simpleSortAlgorithm: false,
+  cmapUrl: CONSTANT.CMAP_URL,
+  cmapPacked: true,
+  normalizedWidth: CONSTANT.NORMALIZED_WIDTH,
+  canvasFactory: new NodeCanvasFactory(),
+  normalizeSize: true,
+  scale: 1,
+  disableFontFace: false,
+  useSystemFonts: false,
 };
+
+async function importPdfLib() {
+  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  return pdfjsLib;
+}
 
 export class PdfReader {
   private options: PdfReaderOptions;
 
   constructor(options: Partial<PdfReaderOptions> = {}) {
     this.options = { ...defaultOptions, ...options };
+
+    const dom = new JSDOM();
+
+    global.document = dom.window.document;
+    global.Image = Image as any;
+    global.HTMLCanvasElement = Canvas as any;
+    global.ImageData = ImageData as any;
+    global.HTMLImageElement = Image as any;
+    global.OffscreenCanvas = Canvas as any;
+
+    (global as any).DOMMatrix = class DOMMatrix {
+      constructor(transform?: string | number[]) {}
+    };
   }
 
   async open(filename: string | ArrayBuffer): Promise<PDFDocumentProxy> {
+    const pdfjsLib = await importPdfLib();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.min.mjs";
+
     let data: Uint8Array<ArrayBuffer>;
 
     if (typeof filename == "string") {
@@ -51,10 +98,83 @@ export class PdfReader {
       data = new Uint8Array(filename);
     }
 
-    return getDocument({
+    return pdfjsLib.getDocument({
       verbosity: +this.options.verbose!,
       data,
+      cMapUrl: this.options.cmapUrl,
+      cMapPacked: this.options.cmapPacked,
     } as DocumentInitParameters).promise;
+  }
+
+  async renderAll(pdf: PDFDocumentProxy): Promise<CanvasMap> {
+    const canvasMap = new Map<number, Canvas>();
+
+    const numOfPages = pdf.numPages;
+    const renderPromises: Promise<void>[] = [];
+    for (let i = 1; i <= numOfPages; i++) {
+      const page = await pdf.getPage(i);
+      renderPromises.push(this.getCanvas(canvasMap, i, page));
+    }
+
+    await Promise.all(renderPromises);
+    return canvasMap;
+  }
+
+  private async getCanvas(
+    canvasMap: CanvasMap,
+    pageNum: number,
+    page: PDFPageProxy
+  ): Promise<void> {
+    let viewport = page.getViewport({ scale: 1 });
+
+    const scale = this.options.scale || CONSTANT.SCALE;
+    if (scale! > 1) {
+      viewport = page.getViewport({ scale });
+    } else if (this.options.normalizeSize) {
+      const normalizedScale = Math.floor(
+        this.options.normalizedWidth! / viewport.width
+      );
+      viewport = page.getViewport({ scale: normalizedScale });
+    }
+
+    const width = Math.floor(viewport.width);
+    const height = Math.floor(viewport.height);
+    const canvas = createCanvas(width, height);
+    const context = canvas.getContext("2d");
+
+    const renderContext: any = {
+      intent: "print",
+      canvasContext: context,
+      viewport: viewport,
+    };
+
+    canvasMap.set(pageNum, canvas);
+
+    // this method below has a problem
+    return page.render(renderContext).promise;
+  }
+
+  async saveCanvasToPng(canvas: Canvas, filename: string): Promise<void> {
+    return new Promise((res) => {
+      const newCanvas = createCanvas(canvas.width, canvas.height);
+      const ctx = newCanvas.getContext("2d");
+      ctx.drawImage(canvas, 0, 0);
+      const out = createWriteStream(filename);
+      const stream = newCanvas.createPNGStream();
+      stream.pipe(out);
+      stream.on("close", () => {
+        res();
+      });
+    });
+  }
+
+  async dumpCanvasMap(canvasMap: CanvasMap, filename: string): Promise<void> {
+    for (let i = 1; i <= canvasMap.size; i++) {
+      const canvas = canvasMap.get(i);
+      if (canvas) {
+        this.saveCanvasToPng(canvas, filename + "-" + i);
+      }
+    }
   }
 
   async getTexts(pdf: PDFDocumentProxy): Promise<PageTexts> {
@@ -79,10 +199,14 @@ export class PdfReader {
     const { height, transform } = page.getViewport({ scale: 1 });
     const pdfToken = await page.getTextContent();
 
+    const pdfjsLib = await importPdfLib();
+    const util = pdfjsLib.Util;
+
     const textsMapped = this.mapTokenToPdfWord(
       pdfToken.items,
       transform,
-      pageNum
+      pageNum,
+      util
     );
 
     const textsSorted = this.options.simpleSortAlgorithm
@@ -104,14 +228,15 @@ export class PdfReader {
   private mapTokenToPdfWord(
     items: (TextItem | TextMarkedContent)[],
     transform: number[],
-    pageNum: number
+    pageNum: number,
+    util: typeof Util
   ): PdfWord[] {
     let pdfWords: PdfWord[] = [];
 
     for (const item of items) {
       const token = item as PdfToken;
 
-      const [_, __, ___, ____, x, y] = Util.transform(
+      const [_, __, ___, ____, x, y] = util.transform(
         transform,
         token.transform
       );

@@ -1,3 +1,6 @@
+import type { Canvas, CanvasRenderingContext2D } from "canvas";
+import type { NodeCanvasFactory } from "./canvas-factory";
+
 export interface PdfToken {
   str: string;
   dir: "ltr" | "rtl";
@@ -64,6 +67,20 @@ export interface CompactPdfLine {
 
 export type CompactPageLines = Map<number, CompactPdfLine[]>;
 
+export interface PdfFont {
+  path: string[];
+  family: string;
+  size?: number;
+  fallback?: string;
+  style?: string;
+  weight?: string;
+}
+
+export interface CanvasCreated {
+  canvas: Canvas;
+  context: CanvasRenderingContext2D;
+}
+
 export interface PdfReaderOptions {
   verbose?: boolean;
   excludeFooter?: boolean;
@@ -73,7 +90,17 @@ export interface PdfReaderOptions {
   footerFromHeightPercentage?: number;
   mergeCloseTextNeighbor?: boolean;
   simpleSortAlgorithm?: boolean;
+  cmapUrl?: string;
+  cmapPacked?: boolean;
+  normalizeSize?: boolean;
+  normalizedWidth?: number;
+  canvasFactory?: NodeCanvasFactory;
+  scale?: number;
+  disableFontFace?: boolean;
+  useSystemFonts?: boolean;
 }
+
+export type CanvasMap = Map<number, Canvas>;
 
 export type PdfCompactLineAlgorithm = "middleY" | "y0";
 
