@@ -23,8 +23,7 @@
     "build:test": "bun task build && bun test",
     "build:publish": "bun task build && bun task report-size && bun task publish",
     "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
-    "copy:worker": "./scripts/copy-worker.sh"
+    "lint:fix": "eslint ./src --fix"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "latest",
