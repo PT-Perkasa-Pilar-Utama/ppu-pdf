@@ -1,3 +1,5 @@
+import type { Canvas } from "canvas";
+
 export interface PdfToken {
   str: string;
   dir: "ltr" | "rtl";
@@ -94,3 +96,5 @@ export interface PdfScannedThreshold {
   wordsPerPage: number;
   textLength: number;
 }
+
+export type CanvasMap = Map<number, Canvas>;

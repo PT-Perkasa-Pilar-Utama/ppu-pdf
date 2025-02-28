@@ -1,7 +1,11 @@
-import { PDFDocument, PDFPage } from "mupdf/mupdfjs";
+import { Canvas, createCanvas, loadImage } from "canvas";
+import { createWriteStream, existsSync, mkdirSync, readFileSync } from "fs";
+import { ColorSpace, Matrix, PDFDocument, PDFPage } from "mupdf/mupdfjs";
+import { join } from "path";
 import type { DocumentStructure } from "./mupdf.interface";
 import { CONSTANT } from "./pdf.constant";
 import {
+  type CanvasMap,
   type CompactPageLines,
   type CompactPdfLine,
   type CompactPdfWord,
@@ -45,6 +49,43 @@ export class PdfReader {
     return PDFDocument.openDocument(data, "application/pdf");
   }
 
+  async renderAll(doc: PDFDocument): Promise<CanvasMap> {
+    const canvasMap = new Map<number, Canvas>();
+
+    const numOfPages = doc.countPages();
+    const renderPromises = Array.from({ length: numOfPages }, (_, i) => {
+      const page = new PDFPage(doc, i);
+      return this.getCanvas(canvasMap, i, page);
+    });
+
+    await Promise.all(renderPromises);
+    return canvasMap;
+  }
+
+  private async getCanvas(
+    canvasMap: CanvasMap,
+    pageNum: number,
+    page: PDFPage
+  ): Promise<void> {
+    const [, , width, height] = page.getBounds();
+
+    const canvas = createCanvas(width, height);
+    const context = canvas.getContext("2d");
+
+    const pixmap = page.toPixmap(
+      Matrix.identity,
+      ColorSpace.DeviceRGB,
+      false,
+      true
+    );
+
+    const pngImage = Buffer.from(pixmap.asPNG());
+    const image = await loadImage(pngImage);
+
+    context.drawImage(image, 0, 0, width, height);
+    canvasMap.set(pageNum, canvas);
+  }
+
   async getTexts(doc: PDFDocument): Promise<PageTexts> {
     const pages: PageTexts = new Map();
     const numOfPages = doc.countPages();
@@ -59,12 +100,54 @@ export class PdfReader {
     return pages;
   }
 
+  async saveCanvasToPng(
+    canvas: Canvas,
+    filename: string,
+    foldername: string
+  ): Promise<void> {
+    return new Promise((res, rej) => {
+      try {
+        const folderPath = join(process.cwd(), foldername);
+        if (!existsSync(folderPath)) {
+          mkdirSync(folderPath, { recursive: true });
+        }
+
+        const newCanvas = createCanvas(canvas.width, canvas.height);
+        const ctx = newCanvas.getContext("2d");
+        ctx.drawImage(canvas, 0, 0);
+
+        const filePath = join(folderPath, filename);
+        const out = createWriteStream(filePath);
+        const stream = newCanvas.createPNGStream();
+
+        stream.pipe(out);
+        stream.on("finish", res);
+        stream.on("error", rej);
+      } catch (error) {
+        rej(error);
+      }
+    });
+  }
+
+  async dumpCanvasMap(
+    canvasMap: Map<number, Canvas>,
+    filename: string,
+    foldername = "out"
+  ): Promise<void> {
+    for (let i = 0; i < canvasMap.size; i++) {
+      const canvas = canvasMap.get(i);
+      if (canvas) {
+        await this.saveCanvasToPng(canvas, `${filename}-${i}.png`, foldername);
+      }
+    }
+  }
+
   private async extractTexts(
     linesMap: PageTexts,
     pageNum: number,
     page: PDFPage
   ): Promise<void> {
-    const [_, __, width, height] = page.getBounds();
+    const [, , , height] = page.getBounds();
     const docStructure = JSON.parse(
       page.toStructuredText().asJSON()
     ) as DocumentStructure;
@@ -497,7 +580,4 @@ export class PdfReader {
 
     return str;
   }
-}
-function readFileSync(filename: string): any {
-  throw new Error("Function not implemented.");
 }

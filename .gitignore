@@ -4,3 +4,4 @@ bun.lock
 
 # Output files
 lib
+out/*
