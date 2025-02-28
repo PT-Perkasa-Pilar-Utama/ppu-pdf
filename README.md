@@ -1,8 +1,8 @@
 # ppu-pdf
 
-Easily extract text from digital PDF files with coordinate and font size included, and optionally group text by lines.
+Easily extract text from digital PDF and Scanned PDF files with coordinate and font size included, and optionally group text by lines.
 
-For headless option (without default pdfjs instance) go checkout ppu-pdf-headless: https://www.npmjs.com/package/ppu-pdf-headless
+> ⚠️ **Warning:** Version 3 uses mupdf for better support in non-browser environment. While version 2 uses pdfjs and focuses only on extraction in digital pdf, you can still uses it here: https://www.npmjs.com/package/ppu-pdf-headless
 
 ## Features
 
@@ -10,10 +10,11 @@ For headless option (without default pdfjs instance) go checkout ppu-pdf-headles
 - **Coordinate Data:** Get precise bounding box and dimension information for each text element.
 - **Line Grouping:** Merge individual text tokens into coherent lines.
 - **Scanned PDF Detection:** Determine if a PDF appears to be scanned or digitally generated.
+- Support for PDF Scan via Tesseract OCR is underway
 
 ## Installation
 
-Note: Using Bun is recommended, im tired getting `Error [ERR_REQUIRE_ESM]: require() of ES Module` or somebody wants to patch it, feel free to open a pull request
+Using Bun is recommended
 
 Install the package via npm:
 
@@ -44,12 +45,12 @@ const pdfReader = new PdfReader({ verbose: false });
 const file = Bun.file("./src/assets/opposite-expectation.pdf");
 
 const buffer = await file.arrayBuffer();
-const pdf = await pdfReader.open(buffer);
+const pdf = pdfReader.open(buffer);
 
 // remember it's a map
 const texts = await pdfReader.getTexts(pdf);
-const page1texts = texts.get(1);
-console.log("texts: ", page1texts);
+const page0texts = texts.get(0);
+console.log("texts: ", page0texts);
 
 const isScanned = pdfReader.isScanned(texts);
 console.log("is pdf scanned: ", isScanned);
@@ -69,6 +70,7 @@ Configuration options for `PdfReader`, allowing customization of PDF text extrac
 | `footerFromHeightPercentage` | `number`  | `0.95`        | Defines the height percentage from the bottom used to identify footer text. |
 | `mergeCloseTextNeighbor`     | `boolean` | `true`        | Merges text elements that are close to each other into a single entity.     |
 | `simpleSortAlgorithm`        | `boolean` | `false`       | Uses a simplified sorting algorithm for text positioning.                   |
+| `scale`                      | `number`  | `1`           | The pdf document scale                                                      |
 
 ### Usage Example:
 
@@ -112,28 +114,32 @@ Extracts the text content from the PDF document.
 Sample return:
 
 ```json
-// Map (1)
+// Map (1) starting index from 0
 {
-  "1": {
+  "0": {
     "words": [
       {
-        "text": "Opposite Expectation: How to See the World as Two-Sided",
+        "text": "Opposite Expectation: How to See the World as Two-Sided​",
         "bbox": {
           "x0": 72,
-          "y0": 83.13183584999996,
-          "x1": 461.4900053795799,
-          "y1": 97.13183534999996
+          "y0": 84,
+          "x1": 464,
+          "y1": 99
         },
         "dimension": {
-          "width": 389.4900053795799,
-          "height": 13.9999995
+          "width": 392,
+          "height": 15
         },
         "metadata": {
-          "direction": "ltr",
-          "fontName": "g_d0_f1",
-          "fontSize": 14,
-          "hasEOL": false,
-          "pageNum": 1
+          "writing": "horizontal",
+          "font": {
+            "name": "AAAAAA+Arial-BoldItalicMT",
+            "family": "sans-serif",
+            "weight": "bold",
+            "style": "italic",
+            "size": 14
+          },
+          "pageNum": 0
         },
         "id": 0
       }
@@ -155,45 +161,49 @@ Retrieves line information from the page texts.
 Sample return:
 
 ```json
-// Map (1)
+// Map (1) starting index from 0
 {
-  "1": [
+  "0": [
     {
       "bbox": {
         "x0": 72,
-        "y0": 83.13183584999996,
-        "x1": 461.4900053795799,
-        "y1": 97.13183534999996
+        "y0": 84,
+        "x1": 464,
+        "y1": 99
       },
       "averageFontSize": 14,
       "dimension": {
-        "width": 389.4900053795799,
-        "height": 13.999999500000001
+        "width": 392,
+        "height": 15
       },
       "words": [
         {
-          "text": "Opposite Expectation: How to See the World as Two-Sided",
+          "text": "Opposite Expectation: How to See the World as Two-Sided​",
           "bbox": {
             "x0": 72,
-            "y0": 83.13183584999996,
-            "x1": 461.4900053795799,
-            "y1": 97.13183534999996
+            "y0": 84,
+            "x1": 464,
+            "y1": 99
           },
           "dimension": {
-            "width": 389.4900053795799,
-            "height": 13.9999995
+            "width": 392,
+            "height": 15
           },
           "metadata": {
-            "direction": "ltr",
-            "fontName": "g_d0_f1",
-            "fontSize": 14,
-            "hasEOL": false,
-            "pageNum": 1
+            "writing": "horizontal",
+            "font": {
+              "name": "AAAAAA+Arial-BoldItalicMT",
+              "family": "sans-serif",
+              "weight": "bold",
+              "style": "italic",
+              "size": 14
+            },
+            "pageNum": 0
           },
           "id": 0
         }
       ],
-      "text": "Opposite Expectation: How to See the World as Two-Sided"
+      "text": "Opposite Expectation: How to See the World as Two-Sided​"
     }
   ]
 }
@@ -213,9 +223,9 @@ Retrieves a compact representation of line information from the page texts using
 Sample return:
 
 ```json
-// Map (1)
+// Map (1) starting index from 0
 {
-  "1": [
+  "0": [
     {
       "bbox": {
         "x0": 72,

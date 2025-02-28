@@ -5,7 +5,7 @@ const pdfReader = new PdfReader();
 const file = Bun.file("../src/assets/opposite-expectation.pdf");
 const buffer = await file.arrayBuffer();
 
-const pdf = await pdfReader.open(buffer);
+const pdf = pdfReader.open(buffer);
 const texts = await pdfReader.getTexts(pdf);
 
 // Example benchmark

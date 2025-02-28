@@ -1,34 +1,7 @@
-declare global {
-  namespace NodeJS {
-    interface Process {
-      getBuiltinModule(name: string): any;
-    }
-  }
-}
-
-if (!process?.getBuiltinModule) {
-  process.getBuiltinModule = (name: any) => {
-    return require(name);
-  };
-}
-
-import { createWriteStream, readFileSync } from "fs";
-
-import { Canvas, createCanvas, Image, ImageData } from "canvas";
-import { JSDOM } from "jsdom";
-import type { PDFDocumentProxy, Util } from "pdfjs-dist";
-
-import type {
-  DocumentInitParameters,
-  TextItem,
-  TextMarkedContent,
-} from "pdfjs-dist/types/src/display/api";
-import type { PDFPageProxy } from "pdfjs-dist/types/web/interfaces";
-
-import { NodeCanvasFactory } from "./canvas-factory";
+import { PDFDocument, PDFPage } from "mupdf/mupdfjs";
+import type { DocumentStructure } from "./mupdf.interface";
 import { CONSTANT } from "./pdf.constant";
 import {
-  type CanvasMap,
   type CompactPageLines,
   type CompactPdfLine,
   type CompactPdfWord,
@@ -38,7 +11,6 @@ import {
   type PdfLine,
   type PdfReaderOptions,
   type PdfScannedThreshold,
-  type PdfToken,
   type PdfWord,
 } from "./pdf.interface";
 
@@ -51,45 +23,17 @@ const defaultOptions: PdfReaderOptions = {
   footerFromHeightPercentage: CONSTANT.FOOTER_FROM_HEIGHT_PERCENTAGE,
   mergeCloseTextNeighbor: true,
   simpleSortAlgorithm: false,
-  cmapUrl: CONSTANT.CMAP_URL,
-  cmapPacked: true,
-  normalizedWidth: CONSTANT.NORMALIZED_WIDTH,
-  canvasFactory: new NodeCanvasFactory(),
-  normalizeSize: true,
   scale: 1,
-  disableFontFace: false,
-  useSystemFonts: false,
 };
-
-async function importPdfLib() {
-  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  return pdfjsLib;
-}
 
 export class PdfReader {
   private options: PdfReaderOptions;
 
   constructor(options: Partial<PdfReaderOptions> = {}) {
     this.options = { ...defaultOptions, ...options };
-
-    const dom = new JSDOM();
-
-    global.document = dom.window.document;
-    global.Image = Image as any;
-    global.HTMLCanvasElement = Canvas as any;
-    global.ImageData = ImageData as any;
-    global.HTMLImageElement = Image as any;
-    global.OffscreenCanvas = Canvas as any;
-
-    (global as any).DOMMatrix = class DOMMatrix {
-      constructor(transform?: string | number[]) {}
-    };
   }
 
-  async open(filename: string | ArrayBuffer): Promise<PDFDocumentProxy> {
-    const pdfjsLib = await importPdfLib();
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "./pdf.worker.min.mjs";
-
+  open(filename: string | ArrayBuffer): PDFDocument {
     let data: Uint8Array<ArrayBuffer>;
 
     if (typeof filename == "string") {
@@ -98,92 +42,16 @@ export class PdfReader {
       data = new Uint8Array(filename);
     }
 
-    return pdfjsLib.getDocument({
-      verbosity: +this.options.verbose!,
-      data,
-      cMapUrl: this.options.cmapUrl,
-      cMapPacked: this.options.cmapPacked,
-    } as DocumentInitParameters).promise;
+    return PDFDocument.openDocument(data, "application/pdf");
   }
 
-  async renderAll(pdf: PDFDocumentProxy): Promise<CanvasMap> {
-    const canvasMap = new Map<number, Canvas>();
-
-    const numOfPages = pdf.numPages;
-    const renderPromises: Promise<void>[] = [];
-    for (let i = 1; i <= numOfPages; i++) {
-      const page = await pdf.getPage(i);
-      renderPromises.push(this.getCanvas(canvasMap, i, page));
-    }
-
-    await Promise.all(renderPromises);
-    return canvasMap;
-  }
-
-  private async getCanvas(
-    canvasMap: CanvasMap,
-    pageNum: number,
-    page: PDFPageProxy
-  ): Promise<void> {
-    let viewport = page.getViewport({ scale: 1 });
-
-    const scale = this.options.scale || CONSTANT.SCALE;
-    if (scale! > 1) {
-      viewport = page.getViewport({ scale });
-    } else if (this.options.normalizeSize) {
-      const normalizedScale = Math.floor(
-        this.options.normalizedWidth! / viewport.width
-      );
-      viewport = page.getViewport({ scale: normalizedScale });
-    }
-
-    const width = Math.floor(viewport.width);
-    const height = Math.floor(viewport.height);
-    const canvas = createCanvas(width, height);
-    const context = canvas.getContext("2d");
-
-    const renderContext: any = {
-      intent: "print",
-      canvasContext: context,
-      viewport: viewport,
-    };
-
-    canvasMap.set(pageNum, canvas);
-
-    // this method below has a problem
-    return page.render(renderContext).promise;
-  }
-
-  async saveCanvasToPng(canvas: Canvas, filename: string): Promise<void> {
-    return new Promise((res) => {
-      const newCanvas = createCanvas(canvas.width, canvas.height);
-      const ctx = newCanvas.getContext("2d");
-      ctx.drawImage(canvas, 0, 0);
-      const out = createWriteStream(filename);
-      const stream = newCanvas.createPNGStream();
-      stream.pipe(out);
-      stream.on("close", () => {
-        res();
-      });
-    });
-  }
-
-  async dumpCanvasMap(canvasMap: CanvasMap, filename: string): Promise<void> {
-    for (let i = 1; i <= canvasMap.size; i++) {
-      const canvas = canvasMap.get(i);
-      if (canvas) {
-        this.saveCanvasToPng(canvas, filename + "-" + i);
-      }
-    }
-  }
-
-  async getTexts(pdf: PDFDocumentProxy): Promise<PageTexts> {
+  async getTexts(doc: PDFDocument): Promise<PageTexts> {
     const pages: PageTexts = new Map();
-    const numOfPages = pdf.numPages;
+    const numOfPages = doc.countPages();
     const getTextContentPromises: Promise<void>[] = [];
 
-    for (let i = 1; i <= numOfPages; i++) {
-      const page = await pdf.getPage(i);
+    for (let i = 0; i < numOfPages; i++) {
+      const page = new PDFPage(doc, i);
       getTextContentPromises.push(this.extractTexts(pages, i, page));
     }
 
@@ -194,21 +62,14 @@ export class PdfReader {
   private async extractTexts(
     linesMap: PageTexts,
     pageNum: number,
-    page: PDFPageProxy
+    page: PDFPage
   ): Promise<void> {
-    const { height, transform } = page.getViewport({ scale: 1 });
-    const pdfToken = await page.getTextContent();
+    const [_, __, width, height] = page.getBounds();
+    const docStructure = JSON.parse(
+      page.toStructuredText().asJSON()
+    ) as DocumentStructure;
 
-    const pdfjsLib = await importPdfLib();
-    const util = pdfjsLib.Util;
-
-    const textsMapped = this.mapTokenToPdfWord(
-      pdfToken.items,
-      transform,
-      pageNum,
-      util
-    );
-
+    const textsMapped = this.mapStructureToPdfWord(docStructure, pageNum);
     const textsSorted = this.options.simpleSortAlgorithm
       ? this.sortTextContentSimple(textsMapped)
       : this.sortTextContent(textsMapped);
@@ -221,45 +82,36 @@ export class PdfReader {
 
     linesMap.set(pageNum, {
       words: textsFiltered,
-      lang: pdfToken.lang || "",
     });
   }
 
-  private mapTokenToPdfWord(
-    items: (TextItem | TextMarkedContent)[],
-    transform: number[],
-    pageNum: number,
-    util: typeof Util
+  private mapStructureToPdfWord(
+    structure: DocumentStructure,
+    pageNum: number
   ): PdfWord[] {
     let pdfWords: PdfWord[] = [];
 
-    for (const item of items) {
-      const token = item as PdfToken;
+    const rawTexts = structure.blocks.map((el) => el.lines).flat();
 
-      const [_, __, ___, ____, x, y] = util.transform(
-        transform,
-        token.transform
-      );
-
-      const scale = x / token.transform[4];
+    for (const item of rawTexts) {
+      const { x, y, w, h } = item.bbox;
+      const font = item.font;
 
       const pdfWord: PdfWord = {
-        text: !this.options.raw ? this.normalizedText(token.str) : token.str,
+        text: !this.options.raw ? this.normalizedText(item.text) : item.text,
         bbox: {
           x0: x,
-          y0: y - token.height * scale,
-          x1: x + token.width * scale,
-          y1: y,
+          y0: y,
+          x1: x + w,
+          y1: y + h,
         },
         dimension: {
-          width: token.width,
-          height: token.height,
+          width: w,
+          height: h,
         },
         metadata: {
-          direction: token.dir,
-          fontName: token.fontName,
-          fontSize: Number(token.height.toFixed(4)),
-          hasEOL: token.hasEOL,
+          writing: item.wmode == 0 ? "horizontal" : "vertical",
+          font: font,
           pageNum,
         },
       };
@@ -300,8 +152,8 @@ export class PdfReader {
     for (const content of texts) {
       const { text, dimension, metadata, bbox } = content;
 
-      if (text === "" && (dimension.width === 0 || metadata.hasEOL)) continue;
-      if (text == " " && metadata.fontSize == 0 && !metadata.hasEOL) continue;
+      if (text === "" && dimension.width === 0) continue;
+      if (text == " " && metadata.font.size == 0) continue;
 
       if (!currentGroup) {
         currentGroup = { ...content };
@@ -312,13 +164,13 @@ export class PdfReader {
         (currentGroup.bbox.y0 + currentGroup.bbox.y1) / 2;
 
       const isWithinXRange: boolean =
-        bbox.x0 <= currentGroup.bbox.x1 + currentGroup.metadata.fontSize;
+        bbox.x0 <= currentGroup.bbox.x1 + currentGroup.metadata.font.size;
 
       const isWithinYRange: boolean =
         content.bbox.y0 <= prevMiddleY && prevMiddleY <= bbox.y1;
 
       const hasSameFontSize =
-        Math.abs(metadata.fontSize - currentGroup.metadata.fontSize) < 0.01;
+        Math.abs(metadata.font.size - currentGroup.metadata.font.size) < 0.01;
 
       const isLeadingGroupAnUnorderedList: boolean =
         isWithinYRange &&
@@ -327,10 +179,7 @@ export class PdfReader {
 
       if (
         isLeadingGroupAnUnorderedList ||
-        (isWithinXRange &&
-          isWithinYRange &&
-          hasSameFontSize &&
-          !currentGroup.metadata.hasEOL)
+        (isWithinXRange && isWithinYRange && hasSameFontSize)
       ) {
         currentGroup = {
           text:
@@ -351,25 +200,16 @@ export class PdfReader {
             y1: Math.max(currentGroup.bbox.y1, bbox.y1),
           },
           metadata: {
-            fontSize: isLeadingGroupAnUnorderedList
-              ? metadata.fontSize
-              : currentGroup.metadata.fontSize,
-            direction: metadata.direction,
-            fontName: metadata.fontName,
-            hasEOL: metadata.hasEOL,
+            writing: metadata.writing,
+            font: isLeadingGroupAnUnorderedList
+              ? metadata.font
+              : currentGroup.metadata.font,
             pageNum: metadata.pageNum,
           },
         };
       } else {
         result.push(currentGroup);
         currentGroup = { ...content };
-      }
-
-      if (metadata.hasEOL) {
-        if (currentGroup) {
-          result.push(currentGroup);
-        }
-        currentGroup = null;
       }
     }
 
@@ -386,12 +226,14 @@ export class PdfReader {
 
     return texts
       .filter((el) => {
-        const hasFontSize = el.metadata.fontSize !== 0;
+        const hasFontSize = el.metadata.font.size !== 0;
+        const notEmptySpace = el.text.trim() !== "";
         const isAfterHeader = el.bbox.y0 > HEADER_THRESHOLD;
         const isBeforeFooter = el.bbox.y0 < FOOTER_THRESHOLD;
 
         return (
           hasFontSize &&
+          notEmptySpace &&
           (!this.options.excludeHeader || isAfterHeader) &&
           (!this.options.excludeFooter || isBeforeFooter)
         );
@@ -403,7 +245,7 @@ export class PdfReader {
     const pageLines: PageLines = new Map();
     const numOfPages = pageTexts.size;
 
-    for (let i = 1; i <= numOfPages; i++) {
+    for (let i = 0; i < numOfPages; i++) {
       const pdfText = pageTexts.get(i);
       let lines: PdfLine[] = [];
       if (pdfText) {
@@ -462,7 +304,7 @@ export class PdfReader {
       lineWords.sort((a, b) => a.bbox.x0 - b.bbox.x0);
 
       const averageFontSize =
-        lineWords.reduce((sum, word) => sum + word.metadata.fontSize, 0) /
+        lineWords.reduce((sum, word) => sum + word.metadata.font.size, 0) /
         lineWords.length;
 
       const dimension = { width: x1 - x0, height: y1 - y0 };
@@ -486,7 +328,7 @@ export class PdfReader {
     const pageLines: CompactPageLines = new Map();
     const numOfPages = pageTexts.size;
 
-    for (let i = 1; i <= numOfPages; i++) {
+    for (let i = 0; i < numOfPages; i++) {
       const pdfText = pageTexts.get(i);
       let lines: CompactPdfLine[] = [];
       if (pdfText) {
@@ -624,7 +466,7 @@ export class PdfReader {
     let fullText = "";
     const totalPages = pageTexts.size;
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = 0; i < totalPages; i++) {
       const page = pageTexts.get(i);
 
       if (page) {
@@ -655,4 +497,7 @@ export class PdfReader {
 
     return str;
   }
+}
+function readFileSync(filename: string): any {
+  throw new Error("Function not implemented.");
 }

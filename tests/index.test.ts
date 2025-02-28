@@ -15,7 +15,7 @@ const pdf = await pdfReader.open(buffer);
 
 describe("open", () => {
   test("should open a PDF and have a positive number of pages", () => {
-    expect(pdf.numPages).toBeGreaterThan(0);
+    expect(pdf.countPages()).toBeGreaterThan(0);
   });
 });
 
@@ -24,12 +24,12 @@ describe("getTexts", () => {
     const texts = await pdfReader.getTexts(pdf);
     expect(texts.size).toBeGreaterThan(0);
 
-    const page1Texts = texts.get(1);
+    const page1Texts = texts.get(0);
     expect(page1Texts).toBeDefined();
-    expect(page1Texts!.words.length).toEqual(truthWords["1"].words.length);
+    expect(page1Texts!.words.length).toEqual(truthWords["0"].words.length);
 
     const extractedWords = page1Texts!.words.map((word) => word.text);
-    const expectedWords = truthWords["1"].words.map((w: any) => w.text);
+    const expectedWords = truthWords["0"].words.map((w: any) => w.text);
     expect(extractedWords).toEqual(expectedWords);
   });
 });
@@ -40,12 +40,12 @@ describe("getLinesFromTexts", () => {
     const lines = pdfReader.getLinesFromTexts(texts);
     expect(lines.size).toBeGreaterThan(0);
 
-    const page1Lines = lines.get(1);
+    const page1Lines = lines.get(0);
     expect(page1Lines).toBeDefined();
-    expect(page1Lines!.length).toEqual(truthLines["1"].length);
+    expect(page1Lines!.length).toEqual(truthLines["0"].length);
 
     const extractedLinesText = page1Lines!.map((line) => line.text);
-    const expectedLinesText = truthLines["1"].map((line: any) => line.text);
+    const expectedLinesText = truthLines["0"].map((line: any) => line.text);
     expect(extractedLinesText).toEqual(expectedLinesText);
   });
 });
