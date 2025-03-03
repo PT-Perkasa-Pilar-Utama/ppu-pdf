@@ -573,13 +573,12 @@ export class PdfReader {
   }
 
   private normalizedText(str: string): string {
-    // Match patterns where single letters are separated by spaces
-    // This will match strings like "S U M M A R Y" or "T E X T"
     const spacedLetterPattern = /^([A-Z]\s)+[A-Z]$/;
 
+    str = str.replace(/\s{2,}/g, " ");
+
     if (spacedLetterPattern.test(str)) {
-      // Remove all spaces to get "SUMMARY" from "S U M M A R Y"
-      return str.replace(/\s/g, "");
+      return str.replace(/\s/g, "").trim();
     }
 
     return str;
