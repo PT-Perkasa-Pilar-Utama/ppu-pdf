@@ -79,6 +79,8 @@ export class PdfReader {
       true
     );
 
+    page.destroy();
+
     const pngImage = Buffer.from(pixmap.asPNG());
     const image = await loadImage(pngImage);
 
@@ -151,6 +153,8 @@ export class PdfReader {
     const docStructure = JSON.parse(
       page.toStructuredText().asJSON()
     ) as DocumentStructure;
+
+    page.destroy();
 
     const textsMapped = this.mapStructureToPdfWord(docStructure, pageNum);
     const textsSorted = this.options.simpleSortAlgorithm
@@ -579,5 +583,13 @@ export class PdfReader {
     }
 
     return str;
+  }
+
+  destroy(doc: PDFDocument): void {
+    return doc.destroy();
+  }
+
+  destroyPage(page: PDFPage): void {
+    return page.destroy();
   }
 }

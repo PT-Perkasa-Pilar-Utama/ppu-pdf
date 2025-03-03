@@ -11,6 +11,8 @@ const pdf = pdfReader.open(buffer);
 const texts = await pdfReader.getTexts(pdf);
 console.log("texts: ", texts.get(0));
 
+pdfReader.destroy(pdf);
+
 const lines = pdfReader.getLinesFromTexts(texts);
 console.log("lines: ", lines.get(0));
 

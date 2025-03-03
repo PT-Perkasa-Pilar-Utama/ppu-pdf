@@ -52,6 +52,8 @@ const texts = await pdfReader.getTexts(pdf);
 const page0texts = texts.get(0);
 console.log("texts: ", page0texts);
 
+pdfReader.destroy(pdf);
+
 const isScanned = pdfReader.isScanned(texts);
 console.log("is pdf scanned: ", isScanned);
 ```

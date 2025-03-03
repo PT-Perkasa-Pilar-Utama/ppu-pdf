@@ -11,7 +11,7 @@ const truthLinesFile = Bun.file("./src/assets/opposite-expectation.lines.json");
 const truthLines = await truthLinesFile.json();
 
 const buffer = await file.arrayBuffer();
-const pdf = await pdfReader.open(buffer);
+const pdf = pdfReader.open(buffer);
 
 describe("open", () => {
   test("should open a PDF and have a positive number of pages", () => {
