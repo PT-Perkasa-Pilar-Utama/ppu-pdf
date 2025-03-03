@@ -578,10 +578,10 @@ export class PdfReader {
     str = str.replace(/\s{2,}/g, " ");
 
     if (spacedLetterPattern.test(str)) {
-      return str.replace(/\s/g, "").trim();
+      return str.replace(/\s/g, "");
     }
 
-    return str;
+    return str?.trim();
   }
 
   destroy(doc: PDFDocument): void {
