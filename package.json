@@ -1,6 +1,6 @@
 {
   "name": "ppu-pdf",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Easily extract text from digital PDF files with coordinate and font size included, and optionally group text by lines or render scanned pdf to canvas/png.",
   "keywords": [
     "pdf-reader",

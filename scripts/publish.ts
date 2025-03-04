@@ -9,6 +9,8 @@ const workerFile = await file(
 await write(join("./pdf.worker.min.mjs"), workerFile);
 
 // Write required files
-await Promise.all(["./README.md", "./package.json"].map(cpToLib));
+await Promise.all(
+  ["./README.md", "./package.json", "./pdf.worker.min.mjs"].map(cpToLib)
+);
 
 await exec`cd lib && bun publish --access=public`;
