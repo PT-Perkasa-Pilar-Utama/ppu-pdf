@@ -118,7 +118,6 @@ export interface PdfReaderOptions {
   mergeCloseTextNeighbor?: boolean;
   simpleSortAlgorithm?: boolean;
   scale?: number;
-  toStructuredTextArgs?: string;
 }
 
 export type PdfCompactLineAlgorithm = "middleY" | "y0";

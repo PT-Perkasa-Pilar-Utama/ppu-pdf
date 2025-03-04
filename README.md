@@ -82,18 +82,17 @@ console.log("is pdf scanned: ", isScanned);
 
 Configuration options for `PdfReader`, allowing customization of PDF text extraction behavior.
 
-| Option                       | Type      | Default Value       | Description                                                                                                              |
-| ---------------------------- | --------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `verbose`                    | `boolean` | `false`             | Enables logging for debugging purposes.                                                                                  |
-| `excludeFooter`              | `boolean` | `true`              | Excludes detected footer text from the extracted content.                                                                |
-| `excludeHeader`              | `boolean` | `true`              | Excludes detected header text from the extracted content.                                                                |
-| `raw`                        | `boolean` | `false`             | If `true`, returns raw text without additional processing.                                                               |
-| `headerFromHeightPercentage` | `number`  | `0.02`              | Defines the height percentage from the top used to identify header text.                                                 |
-| `footerFromHeightPercentage` | `number`  | `0.95`              | Defines the height percentage from the bottom used to identify footer text.                                              |
-| `mergeCloseTextNeighbor`     | `boolean` | `true`              | Merges text elements that are close to each other into a single entity.                                                  |
-| `simpleSortAlgorithm`        | `boolean` | `false`             | Uses a simplified sorting algorithm for text positioning.                                                                |
-| `scale`                      | `number`  | `1`                 | The pdf document scale                                                                                                   |
-| `toStructuredTextArgs`       | `string`  | `ignore-actualtext` | MuPdf toStructuredText special args. See: https://mupdfjs.readthedocs.io/en/latest/classes/PDFPage.html#toStructuredText |
+| Option                       | Type      | Default Value | Description                                                                 |
+| ---------------------------- | --------- | ------------- | --------------------------------------------------------------------------- |
+| `verbose`                    | `boolean` | `false`       | Enables logging for debugging purposes.                                     |
+| `excludeFooter`              | `boolean` | `true`        | Excludes detected footer text from the extracted content.                   |
+| `excludeHeader`              | `boolean` | `true`        | Excludes detected header text from the extracted content.                   |
+| `raw`                        | `boolean` | `false`       | If `true`, returns raw text without additional processing.                  |
+| `headerFromHeightPercentage` | `number`  | `0.02`        | Defines the height percentage from the top used to identify header text.    |
+| `footerFromHeightPercentage` | `number`  | `0.95`        | Defines the height percentage from the bottom used to identify footer text. |
+| `mergeCloseTextNeighbor`     | `boolean` | `true`        | Merges text elements that are close to each other into a single entity.     |
+| `simpleSortAlgorithm`        | `boolean` | `false`       | Uses a simplified sorting algorithm for text positioning.                   |
+| `scale`                      | `number`  | `1`           | The pdf document scale                                                      |
 
 ### Usage Example:
 
