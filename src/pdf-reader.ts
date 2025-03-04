@@ -151,7 +151,7 @@ export class PdfReader {
   ): Promise<void> {
     const [, , , height] = page.getBounds();
     const docStructure = JSON.parse(
-      page.toStructuredText().asJSON()
+      page.toStructuredText("preserve-whitespace,ignore-actualtext").asJSON()
     ) as DocumentStructure;
 
     page.destroy();
