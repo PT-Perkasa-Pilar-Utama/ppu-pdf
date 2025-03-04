@@ -29,6 +29,14 @@ export interface PdfMetadata {
   pageNum: number;
 }
 
+export interface PdfMetadataLegacy {
+  direction: "ltr" | "rtl";
+  fontName: string;
+  fontSize: number;
+  hasEOL: boolean;
+  pageNum: number;
+}
+
 export interface PdfDimension {
   width: number;
   height: number;
@@ -41,8 +49,20 @@ export interface PdfWord {
   metadata: PdfMetadata;
 }
 
+export interface PdfWordLegacy {
+  text: string;
+  bbox: PdfBbox;
+  dimension: PdfDimension;
+  metadata: PdfMetadataLegacy;
+}
+
 export interface PdfTexts {
   words: PdfWord[];
+}
+
+export interface PdfTextsLegacy {
+  words: PdfWordLegacy[];
+  lang: string;
 }
 
 export interface PdfLine {
@@ -53,8 +73,18 @@ export interface PdfLine {
   words: PdfWord[];
 }
 
+export interface PdfLineLegacy {
+  text: string;
+  bbox: PdfBbox;
+  dimension: PdfDimension;
+  averageFontSize: number;
+  words: PdfWordLegacy[];
+}
+
 export type PageTexts = Map<number, PdfTexts>;
+export type PageTextsLegacy = Map<number, PdfTextsLegacy>;
 export type PageLines = Map<number, PdfLine[]>;
+export type PageLinesLegacy = Map<number, PdfLineLegacy[]>;
 
 export interface CompactPdfWord {
   text: string;
@@ -88,6 +118,7 @@ export interface PdfReaderOptions {
   mergeCloseTextNeighbor?: boolean;
   simpleSortAlgorithm?: boolean;
   scale?: number;
+  toStructuredTextArgs?: string;
 }
 
 export type PdfCompactLineAlgorithm = "middleY" | "y0";
