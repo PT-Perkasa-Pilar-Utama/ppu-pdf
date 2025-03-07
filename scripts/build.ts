@@ -33,8 +33,16 @@ for (const path of new Bun.Glob("**/*.ts").scanSync(SOURCEDIR)) {
     .text()
     .then((buf) => {
       transpiler.transform(buf).then((res) => {
-        if (res.length !== 0)
-          Bun.write(`${outPathNoExt}.js`, res.replace(/const /g, "let "));
+        if (res.length !== 0) {
+          // Hardcoded character fix
+          const fixedRes = res
+            .replace(/â¢/g, "•")
+            .replace(/â¦/g, "◦")
+            .replace(/âª/g, "▪")
+            .replace(/â«/g, "▫");
+
+          Bun.write(`${outPathNoExt}.js`, fixedRes.replace(/const /g, "let "));
+        }
       });
 
       Bun.write(
