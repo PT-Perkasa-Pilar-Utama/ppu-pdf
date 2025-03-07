@@ -211,7 +211,7 @@ export class PdfReader {
       const font = item.font;
 
       const pdfWord: PdfWord = {
-        text: !this.options.raw ? this.normalizedText(item.text) : item.text,
+        text: item.text,
         bbox: {
           x0: x,
           y0: y,
@@ -351,7 +351,11 @@ export class PdfReader {
           (!this.options.excludeFooter || isBeforeFooter)
         );
       })
-      .map((el, id) => ({ ...el, id }));
+      .map((el, id) => ({
+        ...el,
+        id,
+        text: !this.options.raw ? this.normalizedText(el.text) : el.text,
+      }));
   }
 
   getLinesFromTexts(pageTexts: PageTexts): PageLines {
@@ -601,7 +605,7 @@ export class PdfReader {
   private normalizedText(str: string): string {
     const spacedLetterPattern = /^([A-Z]\s)+[A-Z]$/;
 
-    str = str.replace(/\s{2,}/g, " ");
+    str = str.replace(/  +/g, " ");
 
     if (spacedLetterPattern.test(str)) {
       return str.replace(/\s/g, "");

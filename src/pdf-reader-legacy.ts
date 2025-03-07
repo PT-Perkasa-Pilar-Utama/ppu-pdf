@@ -119,7 +119,7 @@ export class PdfReaderLegacy {
       const scale = x / token.transform[4];
 
       const pdfWord: PdfWordLegacy = {
-        text: !this.options.raw ? this.normalizedText(token.str) : token.str,
+        text: token.str,
         bbox: {
           x0: x,
           y0: y - token.height * scale,
@@ -274,7 +274,11 @@ export class PdfReaderLegacy {
           (!this.options.excludeFooter || isBeforeFooter)
         );
       })
-      .map((el, id) => ({ ...el, id }));
+      .map((el, id) => ({
+        ...el,
+        id,
+        text: !this.options.raw ? this.normalizedText(el.text) : el.text,
+      }));
   }
 
   getLinesFromTexts(pageTexts: PageTextsLegacy): PageLinesLegacy {
@@ -526,7 +530,7 @@ export class PdfReaderLegacy {
   private normalizedText(str: string): string {
     const spacedLetterPattern = /^([A-Z]\s)+[A-Z]$/;
 
-    str = str.replace(/\s{2,}/g, " ");
+    str = str.replace(/  +/g, " ");
 
     if (spacedLetterPattern.test(str)) {
       return str.replace(/\s/g, "");
