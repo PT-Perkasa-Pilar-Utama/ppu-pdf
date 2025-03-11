@@ -8,9 +8,18 @@ const workerFile = await file(
 ).text();
 await write(join("./pdf.worker.min.mjs"), workerFile);
 
+// Get the latest mupdf-wasm.wasm
+const mupdfWasm = await file("node_modules/mupdf/dist/mupdf-wasm.wasm").text();
+await write(join("./mupdf-wasm.wasm"), mupdfWasm);
+
 // Write required files
 await Promise.all(
-  ["./README.md", "./package.json", "./pdf.worker.min.mjs"].map(cpToLib)
+  [
+    "./README.md",
+    "./package.json",
+    "./pdf.worker.min.mjs",
+    "./mupdf-wasm.wasm",
+  ].map(cpToLib)
 );
 
 await exec`cd lib && bun publish --access=public`;
