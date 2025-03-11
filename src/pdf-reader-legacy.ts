@@ -1,6 +1,13 @@
 import { readFileSync } from "fs";
-import type { PDFDocumentProxy } from "pdfjs-dist";
-import { getDocument, GlobalWorkerOptions, Util } from "pdfjs-dist";
+
+// Comment this until Bun.js support process.getBuiltinModule("module")
+// see: https://github.com/oven-sh/bun/pull/12689
+// import type { PDFDocumentProxy } from "pdfjs-dist/legacy/build/pdf.mjs";
+// import { getDocument, Util } from "pdfjs-dist/legacy/build/pdf.mjs";
+
+import { getDocument, Util, type PDFDocumentProxy } from "pdfjs-dist/";
+import "pdfjs-dist/build/pdf.worker.min.mjs";
+
 import type {
   DocumentInitParameters,
   TextItem,
@@ -21,8 +28,6 @@ import {
   type PdfToken,
   type PdfWordLegacy,
 } from "./pdf.interface";
-
-GlobalWorkerOptions.workerSrc = "./pdf.worker.min.mjs";
 
 const defaultOptions: PdfReaderOptions = {
   verbose: false,

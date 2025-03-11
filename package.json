@@ -1,6 +1,6 @@
 {
   "name": "ppu-pdf",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "description": "Easily extract text from digital PDF files with coordinate and font size included, and optionally group text by lines or render scanned pdf to canvas/png.",
   "keywords": [
     "pdf-reader",
@@ -29,7 +29,7 @@
     "build:publish": "bun task build && bun task report-size && bun task publish",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
-    "compile": "bun build --production ./src/index.ts --compile --external 'mupdf' --outfile ./dist/ppu-pdf-bin"
+    "compile": "bun build --production ./src/index.ts --compile --external 'mupdf' --external 'pdf.worker.min.mjs' --outfile ./dist/ppu-pdf-bin"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "latest",
@@ -52,6 +52,7 @@
     "url": "https://github.com/PT-Perkasa-Pilar-Utama/ppu-pdf.git"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^0.1.68",
     "mupdf": "^1.3.1",
     "pdfjs-dist": "^4.10.38"
   }
