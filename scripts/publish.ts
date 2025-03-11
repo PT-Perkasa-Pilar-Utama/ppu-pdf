@@ -22,4 +22,5 @@ await Promise.all(
   ].map(cpToLib)
 );
 
+await exec`rm pdf.worker.min.mjs mupdf-wasm.wasm`;
 await exec`cd lib && bun publish --access=public`;
