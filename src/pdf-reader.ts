@@ -1,6 +1,20 @@
+// Workaround for compiling binary in bun
+// See: https://github.com/ArtifexSoftware/mupdf.js/issues/147
+
+if (!process.env.BENCHMARK || process.env.BENCHMARK == "false") {
+  globalThis.$libmupdf_wasm_Module = {
+    locateFile(path: string) {
+      return "./node_modules/mupdf/dist/" + path;
+    },
+  };
+}
+
 import { Canvas, createCanvas, loadImage } from "canvas";
 import { createWriteStream, existsSync, mkdirSync, readFileSync } from "fs";
-import { ColorSpace, Matrix, PDFDocument, PDFPage } from "mupdf/mupdfjs";
+
+import { type PDFDocument, type PDFPage } from "mupdf/mupdfjs";
+const mupdf = await import("mupdf/mupdfjs");
+
 import { join } from "path";
 import type { DocumentStructure } from "./mupdf.interface";
 import { CONSTANT } from "./pdf.constant";
@@ -46,7 +60,7 @@ export class PdfReader {
       data = new Uint8Array(filename);
     }
 
-    return PDFDocument.openDocument(data, "application/pdf");
+    return mupdf.PDFDocument.openDocument(data, "application/pdf");
   }
 
   async renderAll(doc: PDFDocument): Promise<CanvasMap> {
@@ -54,7 +68,7 @@ export class PdfReader {
 
     const numOfPages = doc.countPages();
     const renderPromises = Array.from({ length: numOfPages }, (_, i) => {
-      const page = new PDFPage(doc, i);
+      const page = new mupdf.PDFPage(doc, i);
       return this.getCanvas(canvasMap, i, page);
     });
 
@@ -73,8 +87,8 @@ export class PdfReader {
     const context = canvas.getContext("2d");
 
     const pixmap = page.toPixmap(
-      Matrix.identity,
-      ColorSpace.DeviceRGB,
+      mupdf.Matrix.identity,
+      mupdf.ColorSpace.DeviceRGB,
       false,
       true
     );
@@ -94,7 +108,7 @@ export class PdfReader {
     const getTextContentPromises: Promise<void>[] = [];
 
     for (let i = 0; i < numOfPages; i++) {
-      const page = new PDFPage(doc, i);
+      const page = new mupdf.PDFPage(doc, i);
       getTextContentPromises.push(this.extractTexts(pages, i, page));
     }
 

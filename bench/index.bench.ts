@@ -1,23 +1,44 @@
 import { bench, run, summary } from "mitata";
+import { PdfReaderLegacy } from "../src";
 import { PdfReader } from "../src/pdf-reader";
 
 const pdfReader = new PdfReader();
+const pdfReaderLegacy = new PdfReaderLegacy();
+
 const file = Bun.file("../src/assets/opposite-expectation.pdf");
 const buffer = await file.arrayBuffer();
+const buffer2 = await file.arrayBuffer();
 
 const pdf = pdfReader.open(buffer);
-const texts = await pdfReader.getTexts(pdf);
+const pdfLegacy = await pdfReaderLegacy.open(buffer2);
 
-// Example benchmark
+const texts = await pdfReader.getTexts(pdf);
+const textsLegacy = await pdfReaderLegacy.getTexts(pdfLegacy);
+
 summary(() => {
   bench("pdfReader.getTexts()", async () => await pdfReader.getTexts(pdf));
-  bench("pdfReader.getLinesFromTexts()", () =>
-    pdfReader.getLinesFromTexts(texts)
-  );
-  bench("pdfReader.getCompactLinesFromTexts()", async () =>
-    pdfReader.getCompactLinesFromTexts(texts)
+  bench(
+    "pdfReaderLegacy.getTexts()",
+    async () => await pdfReaderLegacy.getTexts(pdfLegacy)
   );
 });
 
-// Start the benchmark
+summary(() => {
+  bench("pdfReader.getLinesFromTexts()", () =>
+    pdfReader.getLinesFromTexts(texts)
+  );
+  bench("pdfReaderLegacy.getLinesFromTexts()", () =>
+    pdfReaderLegacy.getLinesFromTexts(textsLegacy)
+  );
+});
+
+summary(() => {
+  bench("pdfReader.getCompactLinesFromTexts()", () =>
+    pdfReader.getCompactLinesFromTexts(texts)
+  );
+  bench("pdfReaderLegacy.getCompactLinesFromTexts()", () =>
+    pdfReaderLegacy.getCompactLinesFromTexts(textsLegacy)
+  );
+});
+
 run();

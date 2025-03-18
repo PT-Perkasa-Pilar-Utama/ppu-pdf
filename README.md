@@ -32,6 +32,54 @@ If you want `PdfReaderLegacy` headless version, go check https://www.npmjs.com/p
 | saveCanvasToPng()          | ✅        | ❌              |
 | dumpCanvasMap()            | ✅        | ❌              |
 
+## Latest Benchmark
+
+```sh
+clk: ~4.24 GHz
+cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+runtime: bun 1.2.5 (x64-linux)
+
+benchmark                                 avg (min … max) p75 / p99    (min … top 1%)
+--------------------------------------------------------- -------------------------------
+pdfReader.getTexts()                        22.70 ms/iter  23.56 ms   █ ▃
+                                    (19.85 ms … 31.05 ms)  28.11 ms  ▇█▇█    ▂
+                                  (  0.00  b …  10.05 mb) 977.54 kb ▆████▆▆▁▁█▁▆▆▁▁▆▁▆▁▆▆
+
+pdfReaderLegacy.getTexts()                   4.26 ms/iter   4.24 ms  ▆█
+                                      (3.31 ms … 9.23 ms)   8.88 ms  ███
+                                  (  0.00  b …   3.61 mb) 752.97 kb ████▇▄▃▂▂▃▃▂▁▁▂▂▃▁▁▁▂
+
+summary
+  pdfReaderLegacy.getTexts()
+   5.33x faster than pdfReader.getTexts()
+
+--------------------------------------------------------- -------------------------------
+pdfReader.getLinesFromTexts()                5.20 µs/iter   4.92 µs  █
+                                      (3.97 µs … 2.70 ms)  12.57 µs ▄█▅
+                                  (  0.00  b … 264.00 kb) 596.87  b ███▆▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁
+
+pdfReaderLegacy.getLinesFromTexts()          4.75 µs/iter   4.96 µs ▃█      █
+                                      (4.33 µs … 5.74 µs)   5.72 µs ██▇▂▂ ▂ █ ▇
+                                  (  0.00  b …   6.19 kb) 376.81  b █████▁█▁█▆█▆▆▁▁▆▁▁▁▁▆
+
+summary
+  pdfReaderLegacy.getLinesFromTexts()
+   1.09x faster than pdfReader.getLinesFromTexts()
+
+--------------------------------------------------------- -------------------------------
+pdfReader.getCompactLinesFromTexts()         5.81 µs/iter   5.39 µs  █
+                                      (4.18 µs … 2.74 ms)  15.81 µs ▃█▅
+                                  (  0.00  b … 264.00 kb)   1.02 kb ███▅▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁
+
+pdfReaderLegacy.getCompactLinesFromTexts()   5.68 µs/iter   5.37 µs  █
+                                      (4.30 µs … 2.66 ms)  15.02 µs ▂█▅
+                                  (  0.00  b … 264.00 kb) 472.68  b ███▅▃▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+
+summary
+  pdfReaderLegacy.getCompactLinesFromTexts()
+   1.02x faster than pdfReader.getCompactLinesFromTexts()
+```
+
 ## Installation
 
 Using Bun is recommended
