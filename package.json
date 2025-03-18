@@ -1,6 +1,6 @@
 {
   "name": "ppu-pdf",
-  "version": "4.4.1",
+  "version": "4.4.2",
   "description": "Easily extract text from digital PDF files with coordinate and font size included, and optionally group text by lines or render scanned pdf to canvas/png.",
   "keywords": [
     "pdf-reader",
@@ -23,6 +23,9 @@
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
+  "files": [
+    "lib/*"
+  ],
   "scripts": {
     "task": "bun scripts/task.ts",
     "build:test": "bun task build && bun test",
