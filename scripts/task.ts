@@ -5,4 +5,4 @@ const env = task === "bench" ? "true" : "false";
 
 await Bun.$`bun ${{
   raw: import.meta.dir + "/" + task + ".ts",
-}} ${process.argv.slice(3)}`.env({ BENCHMARK: env });
+}} ${process.argv.slice(3)}`.env({ ...process.env, BENCHMARK: env });
