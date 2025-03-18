@@ -165,26 +165,9 @@ export class PdfReader {
   ): Promise<void> {
     const [, , , height] = page.getBounds();
 
-    const mainStructure = JSON.parse(
-      page.toStructuredText().asJSON()
-    ) as DocumentStructure;
-
-    const doubledStructure = JSON.parse(
+    const docStructure = JSON.parse(
       page.toStructuredText("ignore-actualtext").asJSON()
     ) as DocumentStructure;
-
-    const docStructure = {
-      blocks: mainStructure.blocks.map((el, id) => ({
-        ...el,
-        lines: el.lines.map((er, i) => ({
-          ...er,
-          text: this.subtractString(
-            doubledStructure.blocks[id]?.lines[i]?.text,
-            er.text
-          ),
-        })),
-      })),
-    } as DocumentStructure;
 
     page.destroy();
 
@@ -202,14 +185,6 @@ export class PdfReader {
     linesMap.set(pageNum, {
       words: textsFiltered,
     });
-  }
-
-  private subtractString(mainStr: string, subStr: string): string {
-    if (!mainStr) return subStr;
-    if (mainStr == subStr) return mainStr;
-
-    if (!mainStr.includes(subStr)) return mainStr;
-    return mainStr.replace(subStr, "").trim();
   }
 
   private mapStructureToPdfWord(
