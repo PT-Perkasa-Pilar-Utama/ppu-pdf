@@ -9,7 +9,7 @@ if (!(process.argv[1]?.endsWith(".ts") || process.argv[1]?.endsWith(".js"))) {
   };
 }
 
-import { Canvas, createCanvas, loadImage } from "canvas";
+import { Canvas, createCanvas, loadImage } from "@napi-rs/canvas";
 import { createWriteStream, existsSync, mkdirSync, readFileSync } from "fs";
 
 import { type PDFDocument, type PDFPage } from "mupdf/mupdfjs";
@@ -134,11 +134,14 @@ export class PdfReader {
 
         const filePath = join(folderPath, filename);
         const out = createWriteStream(filePath);
-        const stream = newCanvas.createPNGStream();
-
-        stream.pipe(out);
-        stream.on("finish", res);
-        stream.on("error", rej);
+        const buffer = newCanvas.toBuffer("image/png");
+        out.write(buffer, (err) => {
+          if (err) {
+            rej(err);
+          } else {
+            res();
+          }
+        });
       } catch (error) {
         rej(error);
       }
