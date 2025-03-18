@@ -150,6 +150,11 @@ const reader = new PdfReader({ verbose: true, excludeFooter: false });
 
 These options allow fine-tuned control over how text is extracted and processed from PDFs.
 
+### Compiling
+
+You can compile your project into a single binary, but remember to also copy `node_modules/mupdf/dist/mupdf-wasm.wasm` and place it alongside your binary.
+See `package.json` for an example.
+
 ## Method Documentation
 
 ### `PdfReader` Class
