@@ -1,8 +1,11 @@
-import { describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, test } from "bun:test";
+import { existsSync, readdirSync, unlinkSync } from "fs";
+import { join } from "path";
 import { PdfReaderLegacy } from "../src/pdf-reader-legacy";
 
 const pdfReader = new PdfReaderLegacy();
 const file = Bun.file("./src/assets/opposite-expectation.pdf");
+const fileScan = Bun.file("./src/assets/opposite-expectation-scan.pdf");
 
 const truthWordsFile = Bun.file(
   "./src/assets/opposite-expectation.words.legacy.json"
@@ -15,11 +18,17 @@ const truthLinesFile = Bun.file(
 const truthLines = await truthLinesFile.json();
 
 const buffer = await file.arrayBuffer();
+const scanBuffer = await fileScan.arrayBuffer();
+
 const pdf = await pdfReader.open(buffer);
+const pdfScan = await pdfReader.open(scanBuffer);
 
 describe("open", () => {
   test("should open a PDF and have a positive number of pages", () => {
     expect(pdf.numPages).toBeGreaterThan(0);
+  });
+  test("should open a PDF Scanned and have a positive number of pages", () => {
+    expect(pdfScan.numPages).toBeGreaterThan(0);
   });
 });
 
@@ -60,4 +69,33 @@ describe("isScanned", () => {
     const scanned = pdfReader.isScanned(texts);
     expect(scanned).toBe(false);
   });
+});
+
+describe("renderAll", () => {
+  test("should render a pngs in out folder", async () => {
+    const canvasMap = await pdfReader.renderAll(pdfScan);
+    expect(canvasMap.size).toBeGreaterThan(0);
+
+    const files = readdirSync("out");
+    for (const f of files) {
+      unlinkSync(`./out/${f}`);
+    }
+
+    await pdfReader.dumpCanvasMap(canvasMap, "pdfreaderlegacy-scan-test");
+    const filePath = join(
+      __dirname,
+      "..",
+      "out",
+      "pdfreaderlegacy-scan-test-1.png"
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    const isFileExist = existsSync(filePath);
+    expect(isFileExist).toBe(true);
+  });
+});
+
+afterAll(() => {
+  pdfReader.destroy(pdf);
+  pdfReader.destroy(pdfScan);
 });

@@ -1,54 +1,33 @@
-// Workaround for compiling binary in bun
-// See: https://github.com/ArtifexSoftware/mupdf.js/issues/147
+import "./mupdf-workaround";
 
-if (!(process.argv[1]?.endsWith(".ts") || process.argv[1]?.endsWith(".js"))) {
-  globalThis.$libmupdf_wasm_Module = {
-    locateFile(path: string) {
-      return "./" + path;
-    },
-  };
-}
-
-import { Canvas, createCanvas, loadImage } from "@napi-rs/canvas";
-import { createWriteStream, existsSync, mkdirSync, readFileSync } from "fs";
+import { Canvas, createCanvas, GlobalFonts, loadImage } from "@napi-rs/canvas";
+import { existsSync, readFileSync } from "fs";
 
 import { type PDFDocument, type PDFPage } from "mupdf/mupdfjs";
-const mupdf = await import("mupdf/mupdfjs");
+import { type DocumentStructure } from "./mupdf.interface";
 
-import { join } from "path";
-import type { DocumentStructure } from "./mupdf.interface";
-import { CONSTANT } from "./pdf.constant";
+import { PdfReaderCommon } from "./pdf-reader-common";
+import { CONSTANT, PDF_READER_DEFAULT_OPTIONS } from "./pdf.constant";
 import {
   type CanvasMap,
   type CompactPageLines,
-  type CompactPdfLine,
-  type CompactPdfWord,
   type PageLines,
   type PageTexts,
   type PdfCompactLineAlgorithm,
-  type PdfLine,
   type PdfReaderOptions,
   type PdfScannedThreshold,
   type PdfWord,
 } from "./pdf.interface";
 
-const defaultOptions: PdfReaderOptions = {
-  verbose: false,
-  excludeFooter: true,
-  excludeHeader: true,
-  raw: false,
-  headerFromHeightPercentage: CONSTANT.HEADER_FROM_HEIGHT_PERCENTAGE,
-  footerFromHeightPercentage: CONSTANT.FOOTER_FROM_HEIGHT_PERCENTAGE,
-  mergeCloseTextNeighbor: true,
-  simpleSortAlgorithm: false,
-  scale: 1,
-};
+const mupdf = await import("mupdf/mupdfjs");
 
-export class PdfReader {
+export class PdfReader extends PdfReaderCommon {
   private options: PdfReaderOptions;
+  private startIndex = 0;
 
   constructor(options: Partial<PdfReaderOptions> = {}) {
-    this.options = { ...defaultOptions, ...options };
+    super();
+    this.options = { ...PDF_READER_DEFAULT_OPTIONS, ...options };
   }
 
   open(filename: string | ArrayBuffer): PDFDocument {
@@ -86,6 +65,15 @@ export class PdfReader {
     const canvas = createCanvas(width, height);
     const context = canvas.getContext("2d");
 
+    if (this.options.fonts.length) {
+      for (const f of this.options.fonts) {
+        if (!existsSync(f.path))
+          throw new Error(`Invalid font path: [${f.name}] ${f}`);
+
+        GlobalFonts.registerFromPath(f.path, f.name);
+      }
+    }
+
     const pixmap = page.toPixmap(
       mupdf.Matrix.identity,
       mupdf.ColorSpace.DeviceRGB,
@@ -107,58 +95,13 @@ export class PdfReader {
     const numOfPages = doc.countPages();
     const getTextContentPromises: Promise<void>[] = [];
 
-    for (let i = 0; i < numOfPages; i++) {
+    for (let i = this.startIndex; i < numOfPages; i++) {
       const page = new mupdf.PDFPage(doc, i);
       getTextContentPromises.push(this.extractTexts(pages, i, page));
     }
 
     await Promise.all(getTextContentPromises);
     return pages;
-  }
-
-  async saveCanvasToPng(
-    canvas: Canvas,
-    filename: string,
-    foldername: string
-  ): Promise<void> {
-    return new Promise((res, rej) => {
-      try {
-        const folderPath = join(process.cwd(), foldername);
-        if (!existsSync(folderPath)) {
-          mkdirSync(folderPath, { recursive: true });
-        }
-
-        const newCanvas = createCanvas(canvas.width, canvas.height);
-        const ctx = newCanvas.getContext("2d");
-        ctx.drawImage(canvas, 0, 0);
-
-        const filePath = join(folderPath, filename);
-        const out = createWriteStream(filePath);
-        const buffer = newCanvas.toBuffer("image/png");
-        out.write(buffer, (err) => {
-          if (err) {
-            rej(err);
-          } else {
-            res();
-          }
-        });
-      } catch (error) {
-        rej(error);
-      }
-    });
-  }
-
-  async dumpCanvasMap(
-    canvasMap: Map<number, Canvas>,
-    filename: string,
-    foldername = "out"
-  ): Promise<void> {
-    for (let i = 0; i < canvasMap.size; i++) {
-      const canvas = canvasMap.get(i);
-      if (canvas) {
-        await this.saveCanvasToPng(canvas, `${filename}-${i}.png`, foldername);
-      }
-    }
   }
 
   private async extractTexts(
@@ -216,7 +159,9 @@ export class PdfReader {
         },
         metadata: {
           writing: item.wmode == 0 ? "horizontal" : "vertical",
+          direction: "",
           font: font,
+          hasEOL: false,
           pageNum,
         },
       };
@@ -224,28 +169,6 @@ export class PdfReader {
       pdfWords.push(pdfWord);
     }
     return pdfWords;
-  }
-
-  private sortTextContent(texts: PdfWord[]): PdfWord[] {
-    return texts.sort((a, b) => {
-      const heightA = Math.abs(a.bbox.y1 - a.bbox.y0);
-      const heightB = Math.abs(b.bbox.y1 - b.bbox.y0);
-
-      const avgHeight = (heightA + heightB) / 2;
-      const threshold = avgHeight * 0.5;
-
-      const verticalDiff = Math.abs(a.bbox.y0 - b.bbox.y0);
-
-      if (verticalDiff <= threshold) {
-        return a.bbox.x0 - b.bbox.x0;
-      }
-
-      return a.bbox.y0 - b.bbox.y0;
-    });
-  }
-
-  private sortTextContentSimple(texts: PdfWord[]): PdfWord[] {
-    return texts.sort((a, b) => a.bbox.y0 - b.bbox.y0 || a.bbox.x0 - b.bbox.x0);
   }
 
   private mergeTextContent(texts: PdfWord[]): PdfWord[] {
@@ -306,9 +229,11 @@ export class PdfReader {
           },
           metadata: {
             writing: metadata.writing,
+            direction: "",
             font: isLeadingGroupAnUnorderedList
               ? metadata.font
               : currentGroup.metadata.font,
+            hasEOL: false,
             pageNum: metadata.pageNum,
           },
         };
@@ -351,217 +276,26 @@ export class PdfReader {
   }
 
   getLinesFromTexts(pageTexts: PageTexts): PageLines {
-    const pageLines: PageLines = new Map();
-    const numOfPages = pageTexts.size;
-
-    for (let i = 0; i < numOfPages; i++) {
-      const pdfText = pageTexts.get(i);
-      let lines: PdfLine[] = [];
-      if (pdfText) {
-        lines = this.getLines(pdfText.words);
-      }
-      pageLines.set(i, lines);
-    }
-
-    return pageLines;
-  }
-
-  private getLines(words: PdfWord[] = []): PdfLine[] {
-    const lineGroups: PdfWord[][] = [];
-
-    for (const word of words) {
-      let appended = false;
-
-      for (const line of lineGroups) {
-        let currentY0 = Infinity;
-        let currentY1 = -Infinity;
-        for (const w of line) {
-          currentY0 = Math.min(currentY0, w.bbox.y0);
-          currentY1 = Math.max(currentY1, w.bbox.y1);
-        }
-        const midY = (currentY0 + currentY1) / 2;
-
-        if (word.bbox.y0 <= midY && word.bbox.y1 >= midY) {
-          line.push(word);
-          appended = true;
-          break;
-        }
-      }
-
-      if (!appended) {
-        lineGroups.push([word]);
-      }
-    }
-
-    return this.mergeLines(lineGroups);
-  }
-
-  private mergeLines(lines: PdfWord[][]): PdfLine[] {
-    const mergedLines: PdfLine[] = lines.map((lineWords) => {
-      let x0 = Infinity;
-      let y0 = Infinity;
-      let x1 = -Infinity;
-      let y1 = -Infinity;
-
-      for (const word of lineWords) {
-        x0 = Math.min(x0, word.bbox.x0);
-        y0 = Math.min(y0, word.bbox.y0);
-        x1 = Math.max(x1, word.bbox.x1);
-        y1 = Math.max(y1, word.bbox.y1);
-      }
-
-      lineWords.sort((a, b) => a.bbox.x0 - b.bbox.x0);
-
-      const averageFontSize =
-        lineWords.reduce((sum, word) => sum + word.metadata.font.size, 0) /
-        lineWords.length;
-
-      const dimension = { width: x1 - x0, height: y1 - y0 };
-
-      return {
-        bbox: { x0, y0, x1, y1 },
-        averageFontSize,
-        dimension,
-        words: lineWords,
-        text: lineWords.map((word) => word.text).join(" "),
-      };
-    });
-
-    return mergedLines;
+    return this.getLinesFromTextsCommon(pageTexts, this.startIndex);
   }
 
   getCompactLinesFromTexts(
     pageTexts: PageTexts,
     algorithm: PdfCompactLineAlgorithm = "middleY"
   ): CompactPageLines {
-    const pageLines: CompactPageLines = new Map();
-    const numOfPages = pageTexts.size;
-
-    for (let i = 0; i < numOfPages; i++) {
-      const pdfText = pageTexts.get(i);
-      let lines: CompactPdfLine[] = [];
-      if (pdfText) {
-        const mappedCompactWords = this.mapWordsToCompactWords(pdfText.words);
-
-        if (algorithm == "y0") {
-          lines = this.getCompactLinesOldAlgorithm(mappedCompactWords);
-        } else {
-          lines = this.getCompactLines(mappedCompactWords);
-        }
-      }
-      pageLines.set(i, lines);
-    }
-
-    return pageLines;
+    return this.getCompactLinesFromTextsCommon(
+      pageTexts,
+      algorithm,
+      this.startIndex
+    );
   }
 
-  private mapWordsToCompactWords(words: PdfWord[] = []): CompactPdfWord[] {
-    return words.map((word) => ({ text: word.text, bbox: word.bbox }));
-  }
-
-  private getCompactLines(words: CompactPdfWord[] = []): CompactPdfLine[] {
-    const lineGroups: CompactPdfWord[][] = [];
-
-    for (const word of words) {
-      let appended = false;
-
-      for (const line of lineGroups) {
-        let currentY0 = Infinity;
-        let currentY1 = -Infinity;
-        for (const w of line) {
-          currentY0 = Math.min(currentY0, w.bbox.y0);
-          currentY1 = Math.max(currentY1, w.bbox.y1);
-        }
-        const midY = (currentY0 + currentY1) / 2;
-
-        if (word.bbox.y0 <= midY && word.bbox.y1 >= midY) {
-          line.push(word);
-          appended = true;
-          break;
-        }
-      }
-
-      if (!appended) {
-        lineGroups.push([word]);
-      }
-    }
-
-    return this.mergeCompactLines(lineGroups);
-  }
-
-  private mergeCompactLines(lines: CompactPdfWord[][]): CompactPdfLine[] {
-    const mergedLines: CompactPdfLine[] = lines.map((lineWords) => {
-      let x0 = Infinity;
-      let y0 = Infinity;
-      let x1 = -Infinity;
-      let y1 = -Infinity;
-
-      for (const word of lineWords) {
-        x0 = Math.min(x0, word.bbox.x0);
-        y0 = Math.min(y0, word.bbox.y0);
-        x1 = Math.max(x1, word.bbox.x1);
-        y1 = Math.max(y1, word.bbox.y1);
-      }
-
-      lineWords.sort((a, b) => a.bbox.x0 - b.bbox.x0);
-
-      return {
-        bbox: { x0, y0, x1, y1 },
-        words: lineWords.map((word) => ({ text: word.text, bbox: word.bbox })),
-        text: lineWords.map((word) => word.text).join(" "),
-      };
-    });
-
-    return mergedLines;
-  }
-
-  private getCompactLinesOldAlgorithm(
-    words: CompactPdfWord[] = []
-  ): CompactPdfLine[] {
-    const lines: CompactPdfWord[][] = [];
-    for (const word of words) {
-      const line = lines.find(
-        (l) => Math.abs(l[0].bbox.y0 - word.bbox.y0) <= 5
-      );
-
-      if (line) {
-        line.push(word);
-      } else {
-        lines.push([word]);
-      }
-    }
-
-    const linesMerged = this.mergeCompactLinesOldAlgorithm(lines);
-    return linesMerged;
-  }
-
-  private mergeCompactLinesOldAlgorithm(
-    lines: CompactPdfWord[][]
-  ): CompactPdfLine[] {
-    const mergedLines: CompactPdfLine[] = lines.map((line) => {
-      let x0 = Infinity;
-      let y0 = Infinity;
-      let x1 = 0;
-      let y1 = 0;
-      let words: CompactPdfWord[] = [];
-
-      line = line.sort((a, b) => a.bbox.x0 - b.bbox.x0);
-
-      for (const word of line) {
-        x0 = Math.min(x0, word.bbox.x0);
-        y0 = Math.min(y0, word.bbox.y0);
-        x1 = Math.max(x1, word.bbox.x1);
-        y1 = Math.max(y1, word.bbox.y1);
-        words.push(word);
-      }
-      return {
-        bbox: { x0, y0, x1, y1 },
-        words,
-        text: words.map((word) => word.text).join(" "),
-      };
-    });
-
-    return mergedLines;
+  async dumpCanvasMap(
+    canvasMap: Map<number, Canvas>,
+    filename: string,
+    foldername = "out"
+  ): Promise<void> {
+    this.dumpCanvasMapCommon(canvasMap, filename, foldername, this.startIndex);
   }
 
   isScanned(
@@ -571,39 +305,7 @@ export class PdfReader {
       textLength: CONSTANT.TEXT_LENGTH_THRESHOLD,
     }
   ): boolean {
-    let totalWords = 0;
-    let fullText = "";
-    const totalPages = pageTexts.size;
-
-    for (let i = 0; i < totalPages; i++) {
-      const page = pageTexts.get(i);
-
-      if (page) {
-        const texts = page.words.map((w) => w.text).join(" ");
-        fullText += texts + " ";
-        totalWords += texts
-          .split(/\s+/)
-          .filter((word) => word.length > 0).length;
-      }
-    }
-
-    const averageWordsPerPage = totalWords / totalPages;
-    const isWordsBelowThreshold = averageWordsPerPage < options.wordsPerPage;
-    const isTextLengthBelowThreshold = fullText.length < options.textLength;
-
-    return isWordsBelowThreshold || isTextLengthBelowThreshold;
-  }
-
-  private normalizedText(str: string): string {
-    const spacedLetterPattern = /^([A-Z]\s)+[A-Z]$/;
-
-    str = str.replace(/  +/g, " ");
-
-    if (spacedLetterPattern.test(str)) {
-      return str.replace(/\s/g, "");
-    }
-
-    return str?.trim();
+    return this.isScannedCommon(pageTexts, options, this.startIndex);
   }
 
   destroy(doc: PDFDocument): void {

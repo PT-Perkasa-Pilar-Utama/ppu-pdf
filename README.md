@@ -2,9 +2,7 @@
 
 Easily extract text from digital PDF and Scanned PDF files with coordinate and font size included, and optionally group text by lines or render scanned pdf to canvas/png.
 
-There are two class of `PdfReader` (uses MuPDF) and `PdfReaderLegacy` uses (pdfjs-dist). Both are good, for digital pdf with `PdfReader` having more capability to render pdf into Canvas and dump to image/png as well so you can process it further with Tesseract/other OCR tool.
-
-If you want `PdfReaderLegacy` headless version, go check https://www.npmjs.com/package/ppu-pdf-headless
+There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pdfjs-dist).
 
 ## Features
 
@@ -19,7 +17,7 @@ If you want `PdfReaderLegacy` headless version, go check https://www.npmjs.com/p
 
 | Indicator                  | PdfReader | PdfReaderLegacy |
 | -------------------------- | --------- | --------------- |
-| Library                    | MuPDF     | pdfjs-dist      |
+| Library                    | mupdfjs   | pdfjs-dist      |
 | Pages index start          | 0         | 1               |
 | open()                     | ✅        | ✅              |
 | getTexts()                 | ✅        | ✅              |
@@ -28,56 +26,83 @@ If you want `PdfReaderLegacy` headless version, go check https://www.npmjs.com/p
 | getCompactLinesFromTexts() | ✅        | ✅              |
 | destroy()                  | ✅        | ✅              |
 | destroyPage()              | ✅        | ❌              |
-| renderAll()                | ✅        | ❌              |
-| saveCanvasToPng()          | ✅        | ❌              |
-| dumpCanvasMap()            | ✅        | ❌              |
+| renderAll()                | ✅        | ✅              |
+| Width-based scale viewport | ❌        | ✅              |
+| saveCanvasToPng()          | ✅        | ✅              |
+| dumpCanvasMap()            | ✅        | ✅              |
 
 ## Latest Benchmark
 
 ```sh
-clk: ~4.12 GHz
+clk: ~4.41 GHz
 cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
 runtime: bun 1.2.5 (x64-linux)
 
 benchmark                                 avg (min … max) p75 / p99    (min … top 1%)
 --------------------------------------------------------- -------------------------------
-pdfReader.getTexts()                        12.06 ms/iter  12.19 ms ▆█▄
-                                    (10.21 ms … 22.29 ms)  21.23 ms ████▃
-                                  (  0.00  b …   5.32 mb) 524.38 kb █████▇▃▃▁▁▃▁▃▁▃▁▁▁▁▁▃
+pdfReader.getTexts()                        11.10 ms/iter  11.21 ms  █▃
+                                     (9.64 ms … 19.41 ms)  17.85 ms  ██
+                                  (  0.00  b …  12.36 mb) 659.21 kb ▆██▇█▅▁▂▄▂▁▂▁▁▁▁▁▁▂▁▂
 
-pdfReaderLegacy.getTexts()                   4.41 ms/iter   4.55 ms  █▇
-                                      (3.39 ms … 9.62 ms)   8.61 ms ▃██▆
-                                  (  0.00  b …   3.09 mb) 707.68 kb ████▇█▄▁▄▂▁▂▂▂▂▂▁▂▂▂▂
+pdfReaderLegacy.getTexts()                   5.39 ms/iter   5.89 ms    ▄█▃
+                                      (3.60 ms … 9.59 ms)   9.04 ms  ▄▄███▆▃
+                                  (  0.00  b …   3.61 mb) 971.54 kb ▂███████▇█▅▃▆▃▁▅▁▇▁▃▃
 
 summary
   pdfReaderLegacy.getTexts()
-   2.73x faster than pdfReader.getTexts()
+   2.06x faster than pdfReader.getTexts()
 
 --------------------------------------------------------- -------------------------------
-pdfReader.getLinesFromTexts()                5.61 µs/iter   5.08 µs  █
-                                      (3.94 µs … 2.60 ms)  19.94 µs ▂█
-                                  (  0.00  b … 264.00 kb) 763.87  b ██▆▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+pdfReader.getLinesFromTexts()                5.49 µs/iter   4.99 µs  █
+                                      (3.88 µs … 2.46 ms)  20.17 µs ▄█
+                                  (  0.00  b … 264.00 kb) 622.00  b ██▆▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
 
-pdfReaderLegacy.getLinesFromTexts()          5.93 µs/iter   5.46 µs  █
-                                      (3.94 µs … 2.78 ms)  17.71 µs  █▅
-                                  (  0.00  b … 264.00 kb) 949.15  b ▆██▄▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁
+pdfReaderLegacy.getLinesFromTexts()          4.74 µs/iter   4.98 µs       ▂▂█       ▂
+                                      (4.19 µs … 5.87 µs)   5.27 µs ▅     ███ ▅     █   ▅
+                                  (  0.00  b …   6.64 kb) 349.70  b █▇▇▁▇▇███▇█▁▇▇▇▇█▇▇▁█
 
 summary
-  pdfReader.getLinesFromTexts()
-   1.06x faster than pdfReaderLegacy.getLinesFromTexts()
+  pdfReaderLegacy.getLinesFromTexts()
+   1.16x faster than pdfReader.getLinesFromTexts()
 
 --------------------------------------------------------- -------------------------------
-pdfReader.getCompactLinesFromTexts()         6.52 µs/iter   5.89 µs  █
-                                      (4.29 µs … 2.54 ms)  20.34 µs  █▃
-                                  (  0.00  b … 528.00 kb) 995.44  b ▃██▄▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+pdfReader.getCompactLinesFromTexts()         5.53 µs/iter   5.21 µs  █
+                                      (4.06 µs … 2.52 ms)  16.33 µs  █▄
+                                  (  0.00  b … 264.00 kb) 508.17  b ███▄▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
 
-pdfReaderLegacy.getCompactLinesFromTexts()   6.52 µs/iter   6.05 µs  █
-                                      (4.59 µs … 2.25 ms)  20.94 µs  █▂
-                                  (  0.00  b … 264.00 kb) 540.34  b ▅██▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+pdfReaderLegacy.getCompactLinesFromTexts()   5.10 µs/iter   5.29 µs              █
+                                      (4.47 µs … 5.72 µs)   5.69 µs       ▅      █
+                                  (  0.00  b …   7.35 kb) 368.18  b ▅▅▅▅▅██▁▅█▅▅▅█▁▅█▁▅▁█
 
 summary
-  pdfReader.getCompactLinesFromTexts()
-   1x faster than pdfReaderLegacy.getCompactLinesFromTexts()
+  pdfReaderLegacy.getCompactLinesFromTexts()
+   1.09x faster than pdfReader.getCompactLinesFromTexts()
+
+--------------------------------------------------------- -------------------------------
+pdfReader.open()                           488.44 µs/iter 430.61 µs █
+                                    (293.72 µs … 6.04 ms)   2.60 ms █▇
+                                  (  0.00  b …   2.32 mb) 154.84 kb ██▄▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+
+pdfReaderLegacy.open()                     430.02 µs/iter 352.19 µs █
+                                    (246.18 µs … 5.56 ms)   3.11 ms █▃
+                                  (  0.00  b …   3.87 mb)  55.43 kb ██▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+
+summary
+  pdfReaderLegacy.open()
+   1.14x faster than pdfReader.open()
+
+--------------------------------------------------------- -------------------------------
+pdfReader.renderAll()                       48.08 ms/iter  48.50 ms █              █    █
+                                    (46.75 ms … 49.47 ms)  48.99 ms █ ▅  ▅        ▅█▅   █
+                                  (  1.65 mb …   4.64 mb)   3.60 mb █▁█▁▁█▁▁▁▁▁▁▁▁███▁▁▁█
+
+pdfReaderLegacy.renderAll()                100.28 ms/iter 102.23 ms  █     █
+                                   (92.83 ms … 116.89 ms) 107.84 ms ▅█▅    █ ▅ ▅ ▅   ▅  ▅
+                                  (  1.10 mb …  34.45 mb)   9.67 mb ███▁▁▁▁█▁█▁█▁█▁▁▁█▁▁█
+
+summary
+  pdfReader.renderAll()
+   2.09x faster than pdfReaderLegacy.renderAll()
 ```
 
 ## Installation
@@ -104,7 +129,9 @@ bun add ppu-pdf
 
 ## Usage
 
-Below is an example of how to use the library with Bun:
+Below is an example of how to use the library with Bun.
+
+Digital PDF Example:
 
 ```ts
 import { PdfReader } from "ppu-pdf";
@@ -124,6 +151,30 @@ pdfReader.destroy(pdf);
 
 const isScanned = pdfReader.isScanned(texts);
 console.log("is pdf scanned: ", isScanned);
+```
+
+Scanned PDF Example:
+
+```ts
+import { join } from "path";
+import { PdfReader } from "ppu-pdf";
+
+const fonts = [
+  {
+    path: join(__dirname, "..", "fonts", "Arial.ttf"),
+    name: "Arial",
+  },
+];
+
+const pdfReader = new PdfReader({ verbose: false, fonts: fonts });
+
+const fileScan = Bun.file("./src/assets/opposite-expectation-scan.pdf");
+const bufferScan = await fileScan.arrayBuffer();
+
+const pdfScan = pdfReader.open(bufferScan);
+const canvasMap = await pdfReader.renderAll(pdfScan);
+
+pdfReader.dumpCanvasMap(canvasMap, "my-dumped-pdf");
 ```
 
 ## `PdfReaderOptions`
@@ -207,6 +258,7 @@ Sample return:
         },
         "metadata": {
           "writing": "horizontal",
+          "direction": "",
           "font": {
             "name": "AAAAAA+Arial-BoldItalicMT",
             "family": "sans-serif",
@@ -214,6 +266,7 @@ Sample return:
             "style": "italic",
             "size": 14
           },
+          "hasEOL": undefined,
           "pageNum": 0
         },
         "id": 0
@@ -266,6 +319,7 @@ Sample return:
           },
           "metadata": {
             "writing": "horizontal",
+            "direction": "",
             "font": {
               "name": "AAAAAA+Arial-BoldItalicMT",
               "family": "sans-serif",
@@ -273,6 +327,7 @@ Sample return:
               "style": "italic",
               "size": 14
             },
+            "hasEOL": false,
             "pageNum": 0
           },
           "id": 0

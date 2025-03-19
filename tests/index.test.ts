@@ -1,8 +1,11 @@
-import { describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, test } from "bun:test";
+import { existsSync, readdirSync, unlinkSync } from "fs";
+import { join } from "path";
 import { PdfReader } from "../src/pdf-reader";
 
 const pdfReader = new PdfReader();
 const file = Bun.file("./src/assets/opposite-expectation.pdf");
+const fileScan = Bun.file("./src/assets/opposite-expectation-scan.pdf");
 
 const truthWordsFile = Bun.file("./src/assets/opposite-expectation.words.json");
 const truthWords = await truthWordsFile.json();
@@ -11,11 +14,18 @@ const truthLinesFile = Bun.file("./src/assets/opposite-expectation.lines.json");
 const truthLines = await truthLinesFile.json();
 
 const buffer = await file.arrayBuffer();
+const scanBuffer = await fileScan.arrayBuffer();
+
 const pdf = pdfReader.open(buffer);
+const pdfScan = pdfReader.open(scanBuffer);
 
 describe("open", () => {
   test("should open a PDF and have a positive number of pages", () => {
     expect(pdf.countPages()).toBeGreaterThan(0);
+  });
+
+  test("should open a PDF Scanned and have a positive number of pages", () => {
+    expect(pdfScan.countPages()).toBeGreaterThan(0);
   });
 });
 
@@ -56,4 +66,28 @@ describe("isScanned", () => {
     const scanned = pdfReader.isScanned(texts);
     expect(scanned).toBe(false);
   });
+});
+
+describe("renderAll", () => {
+  test("should render a pngs in out folder", async () => {
+    const canvasMap = await pdfReader.renderAll(pdfScan);
+    expect(canvasMap.size).toBeGreaterThan(0);
+
+    const files = readdirSync("out");
+    for (const f of files) {
+      unlinkSync(`./out/${f}`);
+    }
+
+    await pdfReader.dumpCanvasMap(canvasMap, "pdfreader-scan-test");
+    const filePath = join(__dirname, "..", "out", "pdfreader-scan-test-0.png");
+
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    const isFileExist = existsSync(filePath);
+    expect(isFileExist).toBe(true);
+  });
+});
+
+afterAll(() => {
+  pdfReader.destroy(pdf);
+  pdfReader.destroy(pdfScan);
 });

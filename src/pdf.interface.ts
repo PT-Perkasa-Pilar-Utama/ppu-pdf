@@ -1,14 +1,4 @@
-import type { Canvas } from "canvas";
-
-export interface PdfToken {
-  str: string;
-  dir: "ltr" | "rtl";
-  width: number;
-  height: number;
-  transform: number[];
-  fontName: string;
-  hasEOL: boolean;
-}
+import type { Canvas } from "@napi-rs/canvas";
 
 export interface PdfBbox {
   x0: number;
@@ -18,21 +8,15 @@ export interface PdfBbox {
 }
 
 export interface PdfMetadata {
-  writing: "horizontal" | "vertical";
+  writing: "horizontal" | "vertical" | "";
+  direction: "ltr" | "rtl" | "";
   font: {
     name: string;
-    family: string;
-    weight: "normal" | "bold";
-    style: "normal" | "italic";
     size: number;
+    family: string | "";
+    weight: "normal" | "bold" | "";
+    style: "normal" | "italic" | "";
   };
-  pageNum: number;
-}
-
-export interface PdfMetadataLegacy {
-  direction: "ltr" | "rtl";
-  fontName: string;
-  fontSize: number;
   hasEOL: boolean;
   pageNum: number;
 }
@@ -49,20 +33,8 @@ export interface PdfWord {
   metadata: PdfMetadata;
 }
 
-export interface PdfWordLegacy {
-  text: string;
-  bbox: PdfBbox;
-  dimension: PdfDimension;
-  metadata: PdfMetadataLegacy;
-}
-
 export interface PdfTexts {
   words: PdfWord[];
-}
-
-export interface PdfTextsLegacy {
-  words: PdfWordLegacy[];
-  lang: string;
 }
 
 export interface PdfLine {
@@ -73,18 +45,8 @@ export interface PdfLine {
   words: PdfWord[];
 }
 
-export interface PdfLineLegacy {
-  text: string;
-  bbox: PdfBbox;
-  dimension: PdfDimension;
-  averageFontSize: number;
-  words: PdfWordLegacy[];
-}
-
 export type PageTexts = Map<number, PdfTexts>;
-export type PageTextsLegacy = Map<number, PdfTextsLegacy>;
 export type PageLines = Map<number, PdfLine[]>;
-export type PageLinesLegacy = Map<number, PdfLineLegacy[]>;
 
 export interface CompactPdfWord {
   text: string;
@@ -98,14 +60,11 @@ export interface CompactPdfLine {
 }
 
 export type CompactPageLines = Map<number, CompactPdfLine[]>;
+export type PdfCompactLineAlgorithm = "middleY" | "y0";
 
 export interface PdfFont {
-  path: string[];
-  family: string;
-  size?: number;
-  fallback?: string;
-  style?: string;
-  weight?: string;
+  path: string;
+  name: string;
 }
 
 export interface PdfReaderOptions {
@@ -118,9 +77,8 @@ export interface PdfReaderOptions {
   mergeCloseTextNeighbor?: boolean;
   simpleSortAlgorithm?: boolean;
   scale?: number;
+  fonts: PdfFont[];
 }
-
-export type PdfCompactLineAlgorithm = "middleY" | "y0";
 
 export interface PdfScannedThreshold {
   wordsPerPage: number;
