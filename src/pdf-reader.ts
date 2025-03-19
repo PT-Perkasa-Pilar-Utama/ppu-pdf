@@ -21,6 +21,9 @@ import {
 
 const mupdf = await import("mupdf/mupdfjs");
 
+/**
+ * PdfReader class based on mupdfjs for reading and processing PDF documents.
+ */
 export class PdfReader extends PdfReaderCommon {
   private options: PdfReaderOptions;
   private startIndex = 0;
@@ -30,6 +33,11 @@ export class PdfReader extends PdfReaderCommon {
     this.options = { ...PDF_READER_DEFAULT_OPTIONS, ...options };
   }
 
+  /**
+   * Opens a PDF document from a file path or an ArrayBuffer.
+   * @param filename - The file path or ArrayBuffer of the PDF document.
+   * @returns The opened PDFDocument instance.
+   */
   open(filename: string | ArrayBuffer): PDFDocument {
     let data: Uint8Array<ArrayBuffer>;
 
@@ -42,6 +50,11 @@ export class PdfReader extends PdfReaderCommon {
     return mupdf.PDFDocument.openDocument(data, "application/pdf");
   }
 
+  /**
+   * Renders all pages of a PDF document into canvases.
+   * @param doc - The PDFDocument to render.
+   * @returns A map of page numbers to Canvas instances.
+   */
   async renderAll(doc: PDFDocument): Promise<CanvasMap> {
     const canvasMap = new Map<number, Canvas>();
 
@@ -90,6 +103,11 @@ export class PdfReader extends PdfReaderCommon {
     canvasMap.set(pageNum, canvas);
   }
 
+  /**
+   * Extracts text from all pages of a PDF document.
+   * @param doc - The PDFDocument to extract text from.
+   * @returns A map of page numbers to extracted text data.
+   */
   async getTexts(doc: PDFDocument): Promise<PageTexts> {
     const pages: PageTexts = new Map();
     const numOfPages = doc.countPages();
@@ -275,10 +293,21 @@ export class PdfReader extends PdfReaderCommon {
       }));
   }
 
+  /**
+   * Converts extracted text into structured lines.
+   * @param pageTexts - The extracted text data from a PDF.
+   * @returns A map of page numbers to structured lines.
+   */
   getLinesFromTexts(pageTexts: PageTexts): PageLines {
     return this.getLinesFromTextsCommon(pageTexts, this.startIndex);
   }
 
+  /**
+   * Converts extracted text into compact structured lines using a specified algorithm.
+   * @param pageTexts - The extracted text data from a PDF.
+   * @param algorithm - The algorithm for compacting lines (default: "middleY").
+   * @returns A map of page numbers to compact structured lines.
+   */
   getCompactLinesFromTexts(
     pageTexts: PageTexts,
     algorithm: PdfCompactLineAlgorithm = "middleY"
@@ -290,6 +319,12 @@ export class PdfReader extends PdfReaderCommon {
     );
   }
 
+  /**
+   * Saves rendered canvases as image files.
+   * @param canvasMap - The map of canvases to save.
+   * @param filename - The base filename for the output images.
+   * @param foldername - The folder to save the images in (default: "out").
+   */
   async dumpCanvasMap(
     canvasMap: Map<number, Canvas>,
     filename: string,
@@ -298,6 +333,12 @@ export class PdfReader extends PdfReaderCommon {
     this.dumpCanvasMapCommon(canvasMap, filename, foldername, this.startIndex);
   }
 
+  /**
+   * Determines if the PDF document is scanned based on text thresholds.
+   * @param pageTexts - The extracted text data from a PDF.
+   * @param options - The threshold options for scanned detection.
+   * @returns True if the document is likely scanned, false otherwise.
+   */
   isScanned(
     pageTexts: PageTexts,
     options: PdfScannedThreshold = {
@@ -308,10 +349,18 @@ export class PdfReader extends PdfReaderCommon {
     return this.isScannedCommon(pageTexts, options, this.startIndex);
   }
 
+  /**
+   * Destroys the PDF document instance to free memory.
+   * @param doc - The PDFDocument instance to destroy.
+   */
   destroy(doc: PDFDocument): void {
     return doc.destroy();
   }
 
+  /**
+   * Destroys a PDF page instance to free memory.
+   * @param page - The PDFPage instance to destroy.
+   */
   destroyPage(page: PDFPage): void {
     return page.destroy();
   }
