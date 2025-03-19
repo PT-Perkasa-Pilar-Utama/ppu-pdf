@@ -9,21 +9,17 @@ export type {
   CompactPdfLine,
   CompactPdfWord,
   PageLines,
-  PageLinesLegacy,
   PageTexts,
-  PageTextsLegacy,
   PdfBbox,
   PdfCompactLineAlgorithm,
   PdfDimension,
   PdfFont,
   PdfLine,
-  PdfLineLegacy,
   PdfMetadata,
   PdfReaderOptions,
   PdfScannedThreshold,
   PdfTexts,
-  PdfTextsLegacy,
-  PdfToken,
   PdfWord,
-  PdfWordLegacy,
 } from "./pdf.interface";
+
+export type { PdfToken } from "./pdfjs.interface";
