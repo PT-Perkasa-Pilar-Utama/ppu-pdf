@@ -13,7 +13,7 @@
     ],
     "exclude": [
       "tests",
-      "src/assets",
+      "assets",
       "src/pdf-scan.example.ts",
       "src/pdf-digital.example.ts"
     ]

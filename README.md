@@ -12,6 +12,7 @@ There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pd
 - **Scanned PDF Detection:** Determine if a PDF appears to be scanned or digitally generated.
 - **Scanned PDF Canvas Rendering:** Convert scanned pdf per page into a ready to processed canvas.
 - **Scanned PDF to PNG Images:** Convert and write all pdf pages to PNG images.
+- **Parallel execution** Leverage workerpool for better speed
 
 ## Differences
 
@@ -27,9 +28,9 @@ There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pd
 | destroy()                  | ✅        | ✅              |
 | destroyPage()              | ✅        | ❌              |
 | renderAll()                | ✅        | ✅              |
-| Width-based scale viewport | ❌        | ✅              |
 | saveCanvasToPng()          | ✅        | ✅              |
 | dumpCanvasMap()            | ✅        | ✅              |
+| Resize viewport            | ❌        | ✅              |
 
 ## Latest Benchmark
 
@@ -137,7 +138,7 @@ Digital PDF Example:
 import { PdfReader } from "ppu-pdf";
 
 const pdfReader = new PdfReader({ verbose: false });
-const file = Bun.file("./src/assets/opposite-expectation.pdf");
+const file = Bun.file("./assets/opposite-expectation.pdf");
 
 const buffer = await file.arrayBuffer();
 const pdf = pdfReader.open(buffer);
@@ -168,7 +169,7 @@ const fonts = [
 
 const pdfReader = new PdfReader({ verbose: false, fonts: fonts });
 
-const fileScan = Bun.file("./src/assets/opposite-expectation-scan.pdf");
+const fileScan = Bun.file("./assets/opposite-expectation-scan.pdf");
 const bufferScan = await fileScan.arrayBuffer();
 
 const pdfScan = pdfReader.open(bufferScan);

@@ -3,7 +3,7 @@
 import { PdfReader } from ".";
 
 const pdfReader = new PdfReader({ verbose: false });
-const file = Bun.file("./src/assets/opposite-expectation-scan.pdf");
+const file = Bun.file("./assets/opposite-expectation-scan.pdf");
 
 const buffer = await file.arrayBuffer();
 const pdf = pdfReader.open(buffer);

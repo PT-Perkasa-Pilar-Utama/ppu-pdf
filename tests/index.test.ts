@@ -4,13 +4,13 @@ import { join } from "path";
 import { PdfReader } from "../src/pdf-reader";
 
 const pdfReader = new PdfReader();
-const file = Bun.file("./src/assets/opposite-expectation.pdf");
-const fileScan = Bun.file("./src/assets/opposite-expectation-scan.pdf");
+const file = Bun.file("./assets/opposite-expectation.pdf");
+const fileScan = Bun.file("./assets/opposite-expectation-scan.pdf");
 
-const truthWordsFile = Bun.file("./src/assets/opposite-expectation.words.json");
+const truthWordsFile = Bun.file("./assets/opposite-expectation.words.json");
 const truthWords = await truthWordsFile.json();
 
-const truthLinesFile = Bun.file("./src/assets/opposite-expectation.lines.json");
+const truthLinesFile = Bun.file("./assets/opposite-expectation.lines.json");
 const truthLines = await truthLinesFile.json();
 
 const buffer = await file.arrayBuffer();

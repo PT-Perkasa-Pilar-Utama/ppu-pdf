@@ -4,16 +4,16 @@ import { join } from "path";
 import { PdfReaderLegacy } from "../src/pdf-reader-legacy";
 
 const pdfReader = new PdfReaderLegacy();
-const file = Bun.file("./src/assets/opposite-expectation.pdf");
-const fileScan = Bun.file("./src/assets/opposite-expectation-scan.pdf");
+const file = Bun.file("./assets/opposite-expectation.pdf");
+const fileScan = Bun.file("./assets/opposite-expectation-scan.pdf");
 
 const truthWordsFile = Bun.file(
-  "./src/assets/opposite-expectation.words.legacy.json"
+  "./assets/opposite-expectation.words.legacy.json"
 );
 const truthWords = await truthWordsFile.json();
 
 const truthLinesFile = Bun.file(
-  "./src/assets/opposite-expectation.lines.legacy.json"
+  "./assets/opposite-expectation.lines.legacy.json"
 );
 const truthLines = await truthLinesFile.json();
 

@@ -14,3 +14,6 @@ if (!globalThis.process.getBuiltinModule) {
     );
   };
 }
+
+// aLternative solution:
+// process.getBuiltinModule = require;
