@@ -5,8 +5,8 @@ import { PdfReader } from "../src/pdf-reader";
 const pdfReader = new PdfReader();
 const pdfReaderLegacy = new PdfReaderLegacy();
 
-const file = Bun.file("../src/assets/opposite-expectation.pdf");
-const fileScan = Bun.file("../src/assets/opposite-expectation-scan.pdf");
+const file = Bun.file("../assets/benchmark-digital.pdf");
+const fileScan = Bun.file("../assets/benchmark-scan.pdf");
 
 const buffer = await file.arrayBuffer();
 const buffer2 = await file.arrayBuffer();
