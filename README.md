@@ -30,82 +30,82 @@ There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pd
 | renderAll()                | ✅        | ✅              |
 | saveCanvasToPng()          | ✅        | ✅              |
 | dumpCanvasMap()            | ✅        | ✅              |
-| Resize viewport            | ❌        | ✅              |
+| Resize viewport/Custom DPI | ✅        | ✅              |
 
 ## Benchmark
 
 Both digital pdf and scanned pdf with a total 28 pages.
 
 ```sh
-clk: ~4.36 GHz
+clk: ~4.02 GHz
 cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
 runtime: bun 1.2.5 (x64-linux)
 
 benchmark                                 avg (min … max) p75 / p99    (min … top 1%)
 --------------------------------------------------------- -------------------------------
-pdfReader.getTexts()                       435.11 ms/iter 428.49 ms   █
-                                  (407.40 ms … 502.19 ms) 493.51 ms   █ ▅
-                                  (  2.07 mb … 107.30 mb)  27.37 mb ▇▁█▇█▇▁▁▁▁▇▁▁▁▁▁▁▁▁▁▇
+pdfReader.getTexts()                       461.74 ms/iter 459.53 ms    █
+                                  (436.19 ms … 524.12 ms) 513.69 ms   ███
+                                  (  2.29 mb … 107.16 mb)  27.86 mb █▁███▁█▁█▁▁▁▁▁▁▁▁▁▁▁█
 
-pdfReaderLegacy.getTexts()                 214.70 ms/iter 243.70 ms  █
-                                  (186.27 ms … 247.51 ms) 245.94 ms ▅█                  ▅
-                                  (  2.59 mb … 117.54 mb)  40.90 mb ██▁▁▁▁▁▁▁▁▁▁▁▁▁▇▇▁▁▇█
+pdfReaderLegacy.getTexts()                 217.58 ms/iter 233.21 ms   █
+                                  (196.63 ms … 238.71 ms) 236.38 ms   █               ▅
+                                  (  1.58 mb … 118.27 mb)  40.84 mb ▇▁█▁▁▁▇▁▁▁▁▁▁▁▁▁▇▁█▇▇
 
 summary
   pdfReaderLegacy.getTexts()
-   2.03x faster than pdfReader.getTexts()
+   2.12x faster than pdfReader.getTexts()
 
 --------------------------------------------------------- -------------------------------
-pdfReader.getLinesFromTexts()                3.64 ms/iter   3.77 ms  █      ▄
-                                      (3.27 ms … 4.76 ms)   4.48 ms  █▄▃▃▅▇██
-                                  (  0.00  b … 528.00 kb) 186.88 kb ███████████▄▃▃▄▂▂▂▃▂▂
+pdfReader.getLinesFromTexts()                3.82 ms/iter   3.91 ms   ▆    █
+                                      (3.52 ms … 4.95 ms)   4.53 ms  ▇█ ▂ ▄█▆
+                                  (  0.00  b …   1.29 mb) 590.91 kb ▅██▇█▂███▇▅▃▂▂▂▁▂▂▂▂▂
 
-pdfReaderLegacy.getLinesFromTexts()          4.86 ms/iter   5.31 ms  █▂▂        ▃
-                                      (4.12 ms … 7.28 ms)   6.10 ms  ███     █▂▅█▅▃
-                                  (  0.00  b …   1.29 mb) 598.01 kb ████▇▇▅▂▆██████▄▂▂▁▁▂
+pdfReaderLegacy.getLinesFromTexts()          4.77 ms/iter   4.87 ms  █▄  ▄▅▅
+                                      (4.41 ms … 5.66 ms)   5.52 ms  ██▂ ███▅
+                                  (  0.00  b …   1.29 mb) 647.72 kb ████▇████▆▇▆█▂▂▄▄▅▂▁▄
 
 summary
   pdfReader.getLinesFromTexts()
-   1.33x faster than pdfReaderLegacy.getLinesFromTexts()
+   1.25x faster than pdfReaderLegacy.getLinesFromTexts()
 
 --------------------------------------------------------- -------------------------------
-pdfReader.getCompactLinesFromTexts()         3.75 ms/iter   4.03 ms  █
-                                      (3.32 ms … 4.92 ms)   4.38 ms  █         ▄
-                                  (  0.00  b …   2.06 mb) 953.20 kb ███▇▃▄▆█▄▃▆█▅███▄▄▄▄▃
+pdfReader.getCompactLinesFromTexts()         3.87 ms/iter   3.98 ms  ▂█     ▄▃▂
+                                      (3.57 ms … 4.60 ms)   4.40 ms  ██▃▂   ███▄▂
+                                  (  0.00  b …   2.06 mb) 920.63 kb ▇█████▃▇█████▄▄▄▃▄▃▁▂
 
-pdfReaderLegacy.getCompactLinesFromTexts()   4.63 ms/iter   4.98 ms  █
-                                      (3.98 ms … 6.80 ms)   6.75 ms ▅█▄    ▇
-                                  (  0.00  b …   1.55 mb) 794.55 kb ███▄▂▇▇██▄▄▄▂▂▂▂▁▂▁▁▂
+pdfReaderLegacy.getCompactLinesFromTexts()   4.62 ms/iter   4.71 ms  ▃▂   █▂
+                                      (4.27 ms … 5.59 ms)   5.52 ms  ██  ▆██
+                                  (  0.00  b …   1.55 mb) 876.22 kb ▆██▇▆███▇█▅▂▅▄▂▂▁▂▁▁▂
 
 summary
   pdfReader.getCompactLinesFromTexts()
-   1.23x faster than pdfReaderLegacy.getCompactLinesFromTexts()
+   1.19x faster than pdfReaderLegacy.getCompactLinesFromTexts()
 
 --------------------------------------------------------- -------------------------------
-pdfReader.open()                            14.84 ms/iter  16.56 ms  █
-                                     (8.75 ms … 36.73 ms)  36.57 ms ▅█
-                                  (  0.00  b …  59.04 mb)  16.69 mb ██▄▆▁▄▃▁▁▆▃▃▃▄▁▁▁▁▃▁▃
+pdfReader.open()                            14.30 ms/iter  19.97 ms █▄
+                                     (8.56 ms … 31.51 ms)  27.49 ms ██
+                                  (  0.00  b …  58.52 mb)  19.89 mb ██▅▁▃▃▁▃▇▁▃▁▅▁▇█▁▅▁▁▃
 
-pdfReaderLegacy.open()                       7.02 ms/iter   6.79 ms  █▃
-                                     (5.50 ms … 16.50 ms)  16.46 ms  ██
-                                  (  0.00  b …  29.39 mb)   2.04 mb ███▅▄▃▂▂▂▂▂▁▁▁▁▁▁▁▁▂▂
+pdfReaderLegacy.open()                       6.19 ms/iter   6.51 ms  █
+                                     (5.11 ms … 13.27 ms)  10.40 ms  ██▂ ▂
+                                  (  0.00  b …  29.13 mb) 682.14 kb ██████▅▄▃▁▃▁▄▃▁▂▁▁▁▁▂
 
 summary
   pdfReaderLegacy.open()
-   2.11x faster than pdfReader.open()
+   2.31x faster than pdfReader.open()
 
 --------------------------------------------------------- -------------------------------
-pdfReader.renderAll()                         2.67 s/iter    2.66 s    ███ █            █
-                                        (2.60 s … 2.77 s)    2.77 s ▅  ███ █            █
-                                  ( 65.06 mb … 171.11 mb) 129.69 mb █▁▁███▁█▁▁▁▁▁▁▁▁▁▁▁▁█
+pdfReader.renderAll()                         1.10 s/iter    1.12 s                     █
+                                        (1.05 s … 1.13 s)    1.12 s █                 █ █
+                                  ( 66.35 mb … 248.17 mb) 191.68 mb █▁▁▁▁▁▁▁▁██▁▁▁█▁▁▁███
 
-pdfReaderLegacy.renderAll()                   1.58 s/iter    1.59 s      █ █   █
-                                        (1.49 s … 1.76 s)    1.68 s ▅▅   █ █ ▅ █   ▅    ▅
-                                  (274.89 mb … 386.30 mb) 359.70 mb ██▁▁▁█▁█▁█▁█▁▁▁█▁▁▁▁█
+pdfReaderLegacy.renderAll()                   1.68 s/iter    1.70 s             █
+                                        (1.56 s … 1.84 s)    1.77 s ▅ ▅▅    ▅▅ ▅█▅ ▅    ▅
+                                  (231.91 mb … 384.77 mb) 352.18 mb █▁██▁▁▁▁██▁███▁█▁▁▁▁█
 
 summary
-  pdfReaderLegacy.renderAll()
-   1.68x faster than pdfReader.renderAll()
+  pdfReader.renderAll()
+   1.52x faster than pdfReaderLegacy.renderAll()
 ```
 
 ## Installation

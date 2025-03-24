@@ -1,6 +1,6 @@
 import "./mupdf-workaround";
 
-import { Canvas, createCanvas, GlobalFonts, loadImage } from "@napi-rs/canvas";
+import { Canvas, createCanvas, GlobalFonts, ImageData } from "@napi-rs/canvas";
 import { existsSync, readFileSync } from "fs";
 
 import { type PDFDocument, type PDFPage } from "mupdf/mupdfjs";
@@ -31,6 +31,15 @@ export class PdfReader extends PdfReaderCommon {
   constructor(options: Partial<PdfReaderOptions> = {}) {
     super();
     this.options = { ...PDF_READER_DEFAULT_OPTIONS, ...options };
+
+    if (this.options.fonts.length) {
+      for (const f of this.options.fonts) {
+        if (!existsSync(f.path))
+          throw new Error(`Invalid font path: [${f.name}] ${f}`);
+
+        GlobalFonts.registerFromPath(f.path, f.name);
+      }
+    }
   }
 
   /**
@@ -53,15 +62,18 @@ export class PdfReader extends PdfReaderCommon {
   /**
    * Renders all pages of a PDF document into canvases.
    * @param doc - The PDFDocument to render.
-   * @returns A map of page numbers to Canvas instances.
+   * @param dpi - The resolution (dots per inch) to render the PDF pages.
+   *              Higher values improve OCR accuracy but increase memory usage.
+   * @returns A map of page numbers to Canvas instances, where each page number
+   *          corresponds to its rendered canvas representation.
    */
-  async renderAll(doc: PDFDocument): Promise<CanvasMap> {
+  async renderAll(doc: PDFDocument, dpi: number = 72): Promise<CanvasMap> {
     const canvasMap = new Map<number, Canvas>();
 
     const numOfPages = doc.countPages();
     const renderPromises = Array.from({ length: numOfPages }, (_, i) => {
       const page = new mupdf.PDFPage(doc, i);
-      return this.getCanvas(canvasMap, i, page);
+      return this.getCanvas(canvasMap, i, page, dpi);
     });
 
     await Promise.all(renderPromises);
@@ -71,35 +83,45 @@ export class PdfReader extends PdfReaderCommon {
   private async getCanvas(
     canvasMap: CanvasMap,
     pageNum: number,
-    page: PDFPage
+    page: PDFPage,
+    dpi: number
   ): Promise<void> {
-    const [, , width, height] = page.getBounds();
+    const pageDimension = page.getBounds();
+    const scaleFactor = mupdf.Matrix.scale(dpi / 72, dpi / 72);
+    const bbox = mupdf.Rect.transform(pageDimension, scaleFactor);
 
-    const canvas = createCanvas(width, height);
-    const context = canvas.getContext("2d");
+    const pixmap = new mupdf.Pixmap(mupdf.ColorSpace.DeviceRGB, bbox, false);
+    pixmap.clear(255);
 
-    if (this.options.fonts.length) {
-      for (const f of this.options.fonts) {
-        if (!existsSync(f.path))
-          throw new Error(`Invalid font path: [${f.name}] ${f}`);
+    const device = new mupdf.DrawDevice(scaleFactor, pixmap);
+    page.run(device, mupdf.Matrix.identity);
 
-        GlobalFonts.registerFromPath(f.path, f.name);
-      }
-    }
-
-    const pixmap = page.toPixmap(
-      mupdf.Matrix.identity,
-      mupdf.ColorSpace.DeviceRGB,
-      false,
-      true
-    );
-
+    device.close();
     page.destroy();
 
-    const pngImage = Buffer.from(pixmap.asPNG());
-    const image = await loadImage(pngImage);
+    const width = pixmap.getWidth();
+    const height = pixmap.getHeight();
 
-    context.drawImage(image, 0, 0, width, height);
+    const pixels3 = new Uint8ClampedArray(pixmap.getPixels());
+    const pixels4 = new Uint8ClampedArray(width * height * 4);
+
+    for (let i = 0, j = 0; i < pixels3.length; i += 3, j += 4) {
+      pixels4[j] = pixels3[i];
+      pixels4[j + 1] = pixels3[i + 1];
+      pixels4[j + 2] = pixels3[i + 2];
+      pixels4[j + 3] = 255;
+    }
+
+    const imageData = new ImageData(pixels4, width, height) as any;
+    imageData.colorSpace = "srgb";
+
+    const canvas = createCanvas(pageDimension[2], pageDimension[3]);
+    const context = canvas.getContext("2d");
+
+    canvas.width = imageData.width;
+    canvas.height = imageData.height;
+
+    context.putImageData(imageData, 0, 0);
     canvasMap.set(pageNum, canvas);
   }
 

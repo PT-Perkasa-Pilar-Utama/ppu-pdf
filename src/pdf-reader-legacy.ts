@@ -39,6 +39,15 @@ export class PdfReaderLegacy extends PdfReaderCommon {
   constructor(options: Partial<PdfReaderOptions> = {}) {
     super();
     this.options = { ...PDF_READER_DEFAULT_OPTIONS, ...options };
+
+    if (this.options.fonts.length) {
+      for (const f of this.options.fonts) {
+        if (!existsSync(f.path))
+          throw new Error(`Invalid font path: [${f.name}] ${f}`);
+
+        GlobalFonts.registerFromPath(f.path, f.name);
+      }
+    }
   }
 
   /**
@@ -101,15 +110,6 @@ export class PdfReaderLegacy extends PdfReaderCommon {
 
     const canvas = createCanvas(width, height);
     const context = canvas.getContext("2d");
-
-    if (this.options.fonts.length) {
-      for (const f of this.options.fonts) {
-        if (!existsSync(f.path))
-          throw new Error(`Invalid font path: [${f.name}] ${f}`);
-
-        GlobalFonts.registerFromPath(f.path, f.name);
-      }
-    }
 
     const renderContext: any = {
       intent: "print",
