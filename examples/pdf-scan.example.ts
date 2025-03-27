@@ -1,6 +1,6 @@
 // Bun
 
-import { PdfReader } from ".";
+import { PdfReader } from "../src";
 
 const pdfReader = new PdfReader({ verbose: false });
 const file = Bun.file("./assets/opposite-expectation-scan.pdf");
