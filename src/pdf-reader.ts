@@ -186,7 +186,7 @@ export class PdfReader extends PdfReaderCommon {
       const font = item.font;
 
       const pdfWord: PdfWord = {
-        text: item.text,
+        text: this.options.raw ? item.text : this.removeDuplicates(item.text),
         bbox: {
           x0: x,
           y0: y,

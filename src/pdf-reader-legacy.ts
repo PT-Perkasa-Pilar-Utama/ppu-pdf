@@ -187,7 +187,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
       const scale = x / token.transform[4];
 
       const pdfWord: PdfWord = {
-        text: token.str,
+        text: this.options.raw ? token.str : this.removeDuplicates(token.str),
         bbox: {
           x0: x,
           y0: y - token.height * scale,
