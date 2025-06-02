@@ -84,6 +84,33 @@ export class PdfReaderCommon {
     return texts.sort((a, b) => a.bbox.y0 - b.bbox.y0 || a.bbox.x0 - b.bbox.x0);
   }
 
+  protected removeAnnotations(texts: PdfWord[]): PdfWord[] {
+    const seen = new Set<string>();
+    let result: PdfWord[] = [];
+
+    for (let i = 0, len = texts.length; i < len; i++) {
+      const w = texts[i];
+      const key =
+        w.text +
+        "|" +
+        w.bbox.x0 +
+        "," +
+        w.bbox.y0 +
+        "," +
+        w.bbox.x1 +
+        "," +
+        w.bbox.y1 +
+        w.metadata.pageNum;
+
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(w);
+      }
+    }
+
+    return result;
+  }
+
   protected getLinesFromTextsCommon(
     pageTexts: PageTexts,
     startIndex = 0
@@ -340,83 +367,6 @@ export class PdfReaderCommon {
       str = str.replace(/\s/g, "");
     }
 
-    str = this.removeDuplicates(str);
     return str?.trim();
-  }
-
-  protected removeDuplicates(text: string): string {
-    text = text.replace(/\s+/g, " ").trim();
-    if (!text) return text;
-
-    const words = text.split(" ").filter((word) => word.length > 0);
-    const newString: string[] = [];
-
-    const wordLength = words.length;
-    let repetitionCount = 0;
-
-    for (const word of words) {
-      if (word.length <= 1) {
-        if (words.filter((w) => w === word).length > 1) {
-          if (!newString.includes(word)) {
-            newString.push(word);
-            repetitionCount++;
-          }
-        } else {
-          newString.push(word);
-          repetitionCount++;
-        }
-        continue;
-      }
-
-      let patternStartLength;
-      if (word.length <= 2) {
-        patternStartLength = 1;
-      } else if (word.length <= 4) {
-        patternStartLength = Math.min(2, word.length - 1);
-      } else {
-        patternStartLength = 3;
-      }
-
-      const initialLetters = word.substring(0, patternStartLength);
-      const restOfWord = word.substring(patternStartLength);
-
-      const patternIndex = restOfWord.indexOf(initialLetters);
-      if (patternIndex === -1) return text;
-
-      const checkPattern = word.substring(0, patternStartLength + patternIndex);
-      if (!this.isWordRepeatedPattern(word, checkPattern)) return text;
-
-      newString.push(checkPattern);
-      repetitionCount++;
-    }
-
-    if (wordLength !== repetitionCount) return text;
-    return newString.join(" ");
-  }
-
-  protected isWordRepeatedPattern(word: string, pattern: string): boolean {
-    if (word.length < pattern.length * 2) return false;
-    if (!word.startsWith(pattern + pattern)) return false;
-
-    let pos = 0;
-    while (pos < word.length) {
-      const remainingLength = word.length - pos;
-      if (remainingLength >= pattern.length) {
-        if (word.substring(pos, pos + pattern.length) === pattern) {
-          pos += pattern.length;
-        } else {
-          const remaining = word.substring(pos);
-          if (pattern.startsWith(remaining)) {
-            break;
-          }
-          return false;
-        }
-      } else {
-        const remaining = word.substring(pos);
-        return pattern.startsWith(remaining);
-      }
-    }
-
-    return true;
   }
 }

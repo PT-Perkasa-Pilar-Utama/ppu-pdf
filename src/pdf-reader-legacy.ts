@@ -34,7 +34,7 @@ import {
  */
 export class PdfReaderLegacy extends PdfReaderCommon {
   private options: PdfReaderOptions;
-  private startIndex = 1;
+  public readonly startIndex = 1;
 
   constructor(options: Partial<PdfReaderOptions> = {}) {
     super();
@@ -154,9 +154,13 @@ export class PdfReaderLegacy extends PdfReaderCommon {
       pageNum
     );
 
-    const textsSorted = this.options.simpleSortAlgorithm
+    let textsSorted = this.options.simpleSortAlgorithm
       ? this.sortTextContentSimple(textsMapped)
       : this.sortTextContent(textsMapped);
+
+    if (!this.options.raw) {
+      textsSorted = this.removeAnnotations(textsSorted);
+    }
 
     const textsMerged = this.options.mergeCloseTextNeighbor
       ? this.mergeTextContent(textsSorted)
@@ -187,16 +191,16 @@ export class PdfReaderLegacy extends PdfReaderCommon {
       const scale = x / token.transform[4];
 
       const pdfWord: PdfWord = {
-        text: this.options.raw ? token.str : this.removeDuplicates(token.str),
+        text: token.str,
         bbox: {
-          x0: x,
-          y0: y - token.height * scale,
-          x1: x + token.width * scale,
-          y1: y,
+          x0: Math.round(x),
+          y0: Math.round(y - token.height * scale),
+          x1: Math.round(x + token.width * scale),
+          y1: Math.round(y),
         },
         dimension: {
-          width: token.width,
-          height: token.height,
+          width: Math.round(token.width),
+          height: Math.round(token.height),
         },
         metadata: {
           writing: "",
