@@ -349,20 +349,41 @@ export class PdfReaderCommon {
     if (!text) return text;
 
     const words = text.split(" ").filter((word) => word.length > 0);
-    const newString = [];
+    const newString: string[] = [];
 
     const wordLength = words.length;
     let repetitionCount = 0;
 
     for (const word of words) {
-      if (word.length < 3) return text;
+      if (word.length <= 1) {
+        if (words.filter((w) => w === word).length > 1) {
+          if (!newString.includes(word)) {
+            newString.push(word);
+            repetitionCount++;
+          }
+        } else {
+          newString.push(word);
+          repetitionCount++;
+        }
+        continue;
+      }
 
-      const threeLetters = word.substring(0, 3);
-      const restOfWord = word.substring(3);
-      const patternIndex = restOfWord.indexOf(threeLetters);
+      let patternStartLength;
+      if (word.length <= 2) {
+        patternStartLength = 1;
+      } else if (word.length <= 4) {
+        patternStartLength = Math.min(2, word.length - 1);
+      } else {
+        patternStartLength = 3;
+      }
 
+      const initialLetters = word.substring(0, patternStartLength);
+      const restOfWord = word.substring(patternStartLength);
+
+      const patternIndex = restOfWord.indexOf(initialLetters);
       if (patternIndex === -1) return text;
-      const checkPattern = word.substring(0, 3 + patternIndex);
+
+      const checkPattern = word.substring(0, patternStartLength + patternIndex);
       if (!this.isWordRepeatedPattern(word, checkPattern)) return text;
 
       newString.push(checkPattern);
@@ -385,7 +406,9 @@ export class PdfReaderCommon {
           pos += pattern.length;
         } else {
           const remaining = word.substring(pos);
-          if (pattern.startsWith(remaining)) break;
+          if (pattern.startsWith(remaining)) {
+            break;
+          }
           return false;
         }
       } else {
