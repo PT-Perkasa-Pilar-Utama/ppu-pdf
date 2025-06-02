@@ -334,13 +334,66 @@ export class PdfReaderCommon {
 
   protected normalizedText(str: string): string {
     const spacedLetterPattern = /^([A-Z]\s)+[A-Z]$/;
-
     str = str.replace(/  +/g, " ");
 
     if (spacedLetterPattern.test(str)) {
-      return str.replace(/\s/g, "");
+      str = str.replace(/\s/g, "");
     }
 
+    str = this.removeDuplicates(str);
     return str?.trim();
+  }
+
+  protected removeDuplicates(text: string): string {
+    text = text.replace(/\s+/g, " ").trim();
+    if (!text) return text;
+
+    const words = text.split(" ").filter((word) => word.length > 0);
+    const newString = [];
+
+    const wordLength = words.length;
+    let repetitionCount = 0;
+
+    for (const word of words) {
+      if (word.length < 3) return text;
+
+      const threeLetters = word.substring(0, 3);
+      const restOfWord = word.substring(3);
+      const patternIndex = restOfWord.indexOf(threeLetters);
+
+      if (patternIndex === -1) return text;
+      const checkPattern = word.substring(0, 3 + patternIndex);
+      if (!this.isWordRepeatedPattern(word, checkPattern)) return text;
+
+      newString.push(checkPattern);
+      repetitionCount++;
+    }
+
+    if (wordLength !== repetitionCount) return text;
+    return newString.join(" ");
+  }
+
+  protected isWordRepeatedPattern(word: string, pattern: string): boolean {
+    if (word.length < pattern.length * 2) return false;
+    if (!word.startsWith(pattern + pattern)) return false;
+
+    let pos = 0;
+    while (pos < word.length) {
+      const remainingLength = word.length - pos;
+      if (remainingLength >= pattern.length) {
+        if (word.substring(pos, pos + pattern.length) === pattern) {
+          pos += pattern.length;
+        } else {
+          const remaining = word.substring(pos);
+          if (pattern.startsWith(remaining)) break;
+          return false;
+        }
+      } else {
+        const remaining = word.substring(pos);
+        return pattern.startsWith(remaining);
+      }
+    }
+
+    return true;
   }
 }
