@@ -3,7 +3,7 @@ import "./mupdf-workaround";
 import { Canvas, createCanvas, GlobalFonts, ImageData } from "@napi-rs/canvas";
 import { existsSync, readFileSync } from "fs";
 
-import { type PDFDocument, type PDFPage } from "mupdf/mupdfjs";
+import { Document, type PDFDocument, type PDFPage } from "mupdf";
 import { type DocumentStructure } from "./mupdf.interface";
 
 import { PdfReaderCommon } from "./pdf-reader-common";
@@ -19,7 +19,7 @@ import {
   type PdfWord,
 } from "./pdf.interface";
 
-const mupdf = await import("mupdf/mupdfjs");
+const mupdf = await import("mupdf");
 
 /**
  * PdfReader class based on mupdfjs for reading and processing PDF documents.
@@ -47,7 +47,7 @@ export class PdfReader extends PdfReaderCommon {
    * @param filename - The file path or ArrayBuffer of the PDF document.
    * @returns The opened PDFDocument instance.
    */
-  open(filename: string | ArrayBuffer): PDFDocument {
+  open(filename: string | ArrayBuffer): Document {
     let data: Uint8Array<ArrayBuffer>;
 
     if (typeof filename == "string") {
@@ -72,7 +72,7 @@ export class PdfReader extends PdfReaderCommon {
 
     const numOfPages = doc.countPages();
     const renderPromises = Array.from({ length: numOfPages }, (_, i) => {
-      const page = new mupdf.PDFPage(doc, i);
+      const page = doc.loadPage(i);
       return this.getCanvas(canvasMap, i, page, dpi);
     });
 
@@ -136,7 +136,7 @@ export class PdfReader extends PdfReaderCommon {
     const getTextContentPromises: Promise<void>[] = [];
 
     for (let i = this.startIndex; i < numOfPages; i++) {
-      const page = new mupdf.PDFPage(doc, i);
+      const page = doc.loadPage(i);
       getTextContentPromises.push(this.extractTexts(pages, i, page));
     }
 
@@ -152,8 +152,13 @@ export class PdfReader extends PdfReaderCommon {
     const [, , , height] = page.getBounds();
 
     const docStructure = JSON.parse(
-      page.toStructuredText("ignore-actualtext").asJSON()
+      page.toStructuredText("ignore-actualtext,collect-styles").asJSON()
     ) as DocumentStructure;
+
+    Bun.write(
+      `./out/structure-page-${pageNum}.json`,
+      JSON.stringify(docStructure.blocks, null, 2)
+    );
 
     page.destroy();
 

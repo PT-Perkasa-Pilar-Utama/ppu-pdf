@@ -1,6 +1,6 @@
 {
   "name": "@snowfluke/ppu-pdf",
-  "version": "5.3.3",
+  "version": "5.4.0",
   "license": "MIT",
   "exports": "./src/index.ts",
   "publish": {
