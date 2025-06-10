@@ -3,7 +3,7 @@ import "./mupdf-workaround";
 import { Canvas, createCanvas, GlobalFonts, ImageData } from "@napi-rs/canvas";
 import { existsSync, readFileSync } from "fs";
 
-import { Document, type PDFDocument, type PDFPage } from "mupdf";
+import { Document, Page, type PDFPage } from "mupdf";
 import { type DocumentStructure } from "./mupdf.interface";
 
 import { PdfReaderCommon } from "./pdf-reader-common";
@@ -67,7 +67,7 @@ export class PdfReader extends PdfReaderCommon {
    * @returns A map of page numbers to Canvas instances, where each page number
    *          corresponds to its rendered canvas representation.
    */
-  async renderAll(doc: PDFDocument, dpi: number = 72): Promise<CanvasMap> {
+  async renderAll(doc: Document, dpi: number = 72): Promise<CanvasMap> {
     const canvasMap = new Map<number, Canvas>();
 
     const numOfPages = doc.countPages();
@@ -83,7 +83,7 @@ export class PdfReader extends PdfReaderCommon {
   private async getCanvas(
     canvasMap: CanvasMap,
     pageNum: number,
-    page: PDFPage,
+    page: PDFPage | Page,
     dpi: number
   ): Promise<void> {
     const pageDimension = page.getBounds();
@@ -130,7 +130,7 @@ export class PdfReader extends PdfReaderCommon {
    * @param doc - The PDFDocument to extract text from.
    * @returns A map of page numbers to extracted text data.
    */
-  async getTexts(doc: PDFDocument): Promise<PageTexts> {
+  async getTexts(doc: Document): Promise<PageTexts> {
     const pages: PageTexts = new Map();
     const numOfPages = doc.countPages();
     const getTextContentPromises: Promise<void>[] = [];
@@ -147,7 +147,7 @@ export class PdfReader extends PdfReaderCommon {
   private async extractTexts(
     linesMap: PageTexts,
     pageNum: number,
-    page: PDFPage
+    page: Page
   ): Promise<void> {
     const [, , , height] = page.getBounds();
 
@@ -459,7 +459,7 @@ export class PdfReader extends PdfReaderCommon {
    * Destroys the PDF document instance to free memory.
    * @param doc - The PDFDocument instance to destroy.
    */
-  destroy(doc: PDFDocument): void {
+  destroy(doc: Document): void {
     return doc.destroy();
   }
 
