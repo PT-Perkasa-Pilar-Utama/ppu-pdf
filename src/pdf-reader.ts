@@ -168,16 +168,7 @@ export class PdfReader extends PdfReaderCommon {
       : this.sortTextContent(textsMapped);
 
     if (!this.options.raw) {
-      textsSorted = this.removeAnnotations(textsSorted);
-    }
-
-    const isOverlaps = this.detectOverlapingSnakeShape(
-      textsSorted.slice(0, 40)
-    );
-    if (isOverlaps) {
-      console.warn(
-        `Page ${pageNum} has overlapping text from annotations. Consider using a PdfReaderLegacy engine or adjusting the extraction settings.`
-      );
+      textsSorted = this.removeFakeBold(textsSorted);
     }
 
     const textsMerged = this.options.mergeCloseTextNeighbor
@@ -189,72 +180,6 @@ export class PdfReader extends PdfReaderCommon {
     linesMap.set(pageNum, {
       words: textsFiltered,
     });
-  }
-
-  private checkStringsOverlap(s1: string, s2: string): boolean {
-    if (typeof s1 !== "string" || typeof s2 !== "string" || !s1 || !s2) {
-      return false;
-    }
-
-    const normS1 = s1.toLowerCase().trim();
-    const normS2 = s2.toLowerCase().trim();
-
-    if (normS1.length === 0 || normS2.length === 0) {
-      return false;
-    }
-
-    if (normS1 === normS2) {
-      return false;
-    }
-
-    if (normS1.includes(normS2) || normS2.includes(normS1)) {
-      return true;
-    }
-
-    const words1 = normS1.split(/\s+/).filter((w) => w.length > 0);
-    const words2 = normS2.split(/\s+/).filter((w) => w.length > 0);
-
-    if (words1.length > 0 && words2.length > 0) {
-      for (const wordToken1 of words1) {
-        if (words2.includes(wordToken1)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  private detectOverlapingSnakeShape(
-    words: PdfWord[],
-    overlappingThreshold = 3
-  ): boolean {
-    if (!words || words.length < 2) {
-      return false;
-    }
-
-    let overlapCount = 0;
-
-    for (let i = 0; i < words.length - 1; i++) {
-      const currentWord = words[i];
-      const nextWord = words[i + 1];
-
-      if (
-        currentWord &&
-        typeof currentWord.text === "string" &&
-        nextWord &&
-        typeof nextWord.text === "string"
-      ) {
-        if (this.checkStringsOverlap(currentWord.text, nextWord.text)) {
-          overlapCount++;
-          if (overlapCount >= overlappingThreshold) {
-            return true;
-          }
-        }
-      }
-    }
-
-    return false;
   }
 
   private mapStructureToPdfWord(

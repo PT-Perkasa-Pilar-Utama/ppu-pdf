@@ -84,7 +84,7 @@ export class PdfReaderCommon {
     return texts.sort((a, b) => a.bbox.y0 - b.bbox.y0 || a.bbox.x0 - b.bbox.x0);
   }
 
-  protected removeAnnotations(texts: PdfWord[]): PdfWord[] {
+  protected removeFakeBold(texts: PdfWord[]): PdfWord[] {
     const seen = new Set<string>();
     let result: PdfWord[] = [];
 

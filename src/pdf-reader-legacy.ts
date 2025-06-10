@@ -159,7 +159,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
       : this.sortTextContent(textsMapped);
 
     if (!this.options.raw) {
-      textsSorted = this.removeAnnotations(textsSorted);
+      textsSorted = this.removeFakeBold(textsSorted);
     }
 
     const textsMerged = this.options.mergeCloseTextNeighbor
