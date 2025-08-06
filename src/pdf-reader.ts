@@ -155,11 +155,6 @@ export class PdfReader extends PdfReaderCommon {
       page.toStructuredText("ignore-actualtext,collect-styles").asJSON()
     ) as DocumentStructure;
 
-    Bun.write(
-      `./out/structure-page-${pageNum}.json`,
-      JSON.stringify(docStructure.blocks, null, 2)
-    );
-
     page.destroy();
 
     const textsMapped = this.mapStructureToPdfWord(docStructure, pageNum);
