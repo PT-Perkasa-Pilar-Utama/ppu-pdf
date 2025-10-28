@@ -23,6 +23,7 @@ There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pd
 | open()                     | ✅        | ✅              |
 | getTexts()                 | ✅        | ✅              |
 | isScanned()                | ✅        | ✅              |
+| isPageScanned()            | ✅        | ✅              |
 | getLinesFromTexts()        | ✅        | ✅              |
 | getCompactLinesFromTexts() | ✅        | ✅              |
 | destroy()                  | ✅        | ✅              |
@@ -246,6 +247,7 @@ Sample return:
 // Map (1) starting index from 0
 {
   "0": {
+    "fullText": "Opposite Expectation: How to See the World as Two-Sided Lorem ipsum",
     "words": [
       {
         "text": "Opposite Expectation: How to See the World as Two-Sided​",

@@ -167,9 +167,11 @@ export class PdfReaderLegacy extends PdfReaderCommon {
       : textsSorted;
 
     const textsFiltered = this.filterTextContent(textsMerged, height);
+    const fullText = textsFiltered.map((word) => word.text).join(" ");
 
     linesMap.set(pageNum, {
       words: textsFiltered,
+      fullText,
     });
   }
 
@@ -380,6 +382,22 @@ export class PdfReaderLegacy extends PdfReaderCommon {
     }
   ): boolean {
     return this.isScannedCommon(pageTexts, options, this.startIndex);
+  }
+
+  /**
+   * Determines if the individual PDF page is a scanned/digital based on text thresholds.
+   * @param pageText - The extracted page text.
+   * @param options - The threshold options for scanned detection.
+   * @returns True if the page is likely scanned, false otherwise.
+   */
+  isPageScanned(
+    pageText: string,
+    options: PdfScannedThreshold = {
+      wordsPerPage: CONSTANT.WORDS_PER_PAGE_THRESHOLD,
+      textLength: CONSTANT.TEXT_LENGTH_THRESHOLD,
+    }
+  ): boolean {
+    return this.isPageScannedCommon(pageText, options);
   }
 
   /**

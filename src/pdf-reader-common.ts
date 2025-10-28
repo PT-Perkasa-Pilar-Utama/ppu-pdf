@@ -369,4 +369,24 @@ export class PdfReaderCommon {
 
     return str?.trim();
   }
+
+  protected isPageScannedCommon(
+    pageText: string,
+    options: PdfScannedThreshold = {
+      wordsPerPage: CONSTANT.WORDS_PER_PAGE_THRESHOLD,
+      textLength: CONSTANT.TEXT_LENGTH_THRESHOLD,
+    }
+  ): boolean {
+    const normalizedText = this.normalizedText(pageText);
+
+    const wordCount = normalizedText
+      .split(/\s+/)
+      .filter((word) => word.length > 0).length;
+
+    const isWordsBelowThreshold = wordCount < options.wordsPerPage;
+    const isTextLengthBelowThreshold =
+      normalizedText.length < options.textLength;
+
+    return isWordsBelowThreshold || isTextLengthBelowThreshold;
+  }
 }

@@ -69,6 +69,13 @@ describe("isScanned", () => {
     const scanned = pdfReader.isScanned(texts);
     expect(scanned).toBe(false);
   });
+
+  test("should correctly detect that the page 1 is a scanned", async () => {
+    const texts = await pdfReader.getTexts(pdfScan);
+    const page1FullText = texts.get(pdfReader.startIndex)?.fullText || "";
+    const scanned = pdfReader.isPageScanned(page1FullText);
+    expect(scanned).toBe(true);
+  });
 });
 
 describe("renderAll", () => {

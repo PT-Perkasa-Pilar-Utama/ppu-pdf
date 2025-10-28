@@ -86,6 +86,9 @@ export interface PdfWord {
 export interface PdfTexts {
   /** List of extracted words. */
   words: PdfWord[];
+
+  /** The full text of extracted words */
+  fullText: string;
 }
 
 /**
