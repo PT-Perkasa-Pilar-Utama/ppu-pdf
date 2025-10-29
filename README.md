@@ -9,10 +9,10 @@ There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pd
 - **Text Extraction:** Retrieve all text content from a PDF.
 - **Coordinate Data:** Get precise bounding box and dimension information for each text element.
 - **Line Grouping:** Merge individual text tokens into coherent lines.
-- **Scanned PDF Detection:** Determine if a PDF appears to be scanned or digitally generated.
+- **Scanned PDF Detection:** Determine if a PDF/individual page appears to be scanned or digitally generated.
 - **Scanned PDF Canvas Rendering:** Convert scanned pdf per page into a ready to processed canvas.
 - **Scanned PDF to PNG Images:** Convert and write all pdf pages to PNG images.
-- **Parallel execution** Leverage workerpool for better speed (WIP)
+- **Scanned PDF Text Extraction:** Retrieve all text content from a scanned PDF using `ppu-paddle-ocr`.
 
 ## Differences
 
@@ -22,6 +22,7 @@ There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pd
 | Pages index start          | 0         | 1               |
 | open()                     | ✅        | ✅              |
 | getTexts()                 | ✅        | ✅              |
+| getTextsScanned()          | ✅        | ✅              |
 | isScanned()                | ✅        | ✅              |
 | isPageScanned()            | ✅        | ✅              |
 | getLinesFromTexts()        | ✅        | ✅              |
@@ -116,20 +117,22 @@ Using Bun is recommended
 Install the package via npm:
 
 ```bash
-npm install ppu-pdf
+npm install ppu-pdf ppu-paddle-ocr
 ```
 
 Or using Yarn:
 
 ```bash
-yarn add ppu-pdf
+yarn add ppu-pdf ppu-paddle-ocr
 ```
 
 Bun:
 
 ```bash
-bun add ppu-pdf
+bun add ppu-pdf ppu-paddle-ocr
 ```
+
+You can opt-out `ppu-paddle-ocr` if you are planning on not extracting text from scanned pdf.
 
 ## Usage
 
@@ -162,6 +165,7 @@ Scanned PDF Example:
 ```ts
 import { join } from "path";
 import { PdfReader } from "ppu-pdf";
+import { PaddleOcrService } from "ppu-paddle-ocr";
 
 const fonts = [
   {
@@ -171,14 +175,18 @@ const fonts = [
 ];
 
 const pdfReader = new PdfReader({ verbose: false, fonts: fonts });
+const ocr = new PaddleOcrService();
 
 const fileScan = Bun.file("./assets/opposite-expectation-scan.pdf");
 const bufferScan = await fileScan.arrayBuffer();
 
 const pdfScan = pdfReader.open(bufferScan);
 const canvasMap = await pdfReader.renderAll(pdfScan);
+pdfReader.destroy(pdf);
 
 pdfReader.dumpCanvasMap(canvasMap, "my-dumped-pdf");
+const texts = await pdfReader.getTextsScanned(ocr, canvasMap);
+console.log("texts: ", texts.get(0));
 ```
 
 ## `PdfReaderOptions`

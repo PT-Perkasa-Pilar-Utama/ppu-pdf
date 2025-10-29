@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { existsSync, readdirSync, unlinkSync } from "fs";
 import { join } from "path";
+import { PaddleOcrService } from "ppu-paddle-ocr";
 import { PdfReaderLegacy } from "../src/pdf-reader-legacy";
 
 const pdfReader = new PdfReaderLegacy();
@@ -44,6 +45,21 @@ describe("getTexts", () => {
     const extractedWords = page1Texts!.words.map((word) => word.text);
     const expectedWords = truthWords["1"].words.map((w: any) => w.text);
     expect(extractedWords).toEqual(expectedWords);
+  });
+});
+
+describe("getTextsScanned", () => {
+  test("should extract text from scanned pdf matching expected truth words", async () => {
+    const ocr = new PaddleOcrService();
+    const canvasMap = await pdfReader.renderAll(pdfScan);
+    const texts = await pdfReader.getTextsScanned(ocr, canvasMap);
+    expect(texts.size).toBeGreaterThan(0);
+
+    const page1Texts = texts.get(1);
+    expect(page1Texts).toBeDefined();
+    expect(page1Texts!.words.length).toEqual(truthWords["1"].words.length);
+
+    await ocr.destroy();
   });
 });
 

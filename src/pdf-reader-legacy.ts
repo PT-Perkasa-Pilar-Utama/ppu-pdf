@@ -29,6 +29,8 @@ import {
   type PdfWord,
 } from "./pdf.interface";
 
+import { type PaddleOcrResult, type PaddleOcrService } from "ppu-paddle-ocr";
+
 /**
  * PdfReaderLegacy class based on pdfjs-dist for reading and processing PDF documents.
  */
@@ -88,6 +90,35 @@ export class PdfReaderLegacy extends PdfReaderCommon {
 
     await Promise.all(renderPromises);
     return canvasMap;
+  }
+
+  /**
+   * Extracts text from scanned PDF pages using ppu-paddle-ocr package.
+   * @param paddleOcrService - The OCR service instance specifically from ppu-paddle-ocr to use for text recognition.
+   * @param canvasMap - A map of page numbers to Canvas instances representing rendered PDF pages.
+   * @returns A map of page numbers to extracted text data with OCR results.
+   */
+  async getTextsScanned(
+    paddleOcrService: PaddleOcrService,
+    canvasMap: CanvasMap
+  ): Promise<PageTexts> {
+    await paddleOcrService.initialize();
+
+    const pages: PageTexts = new Map();
+    const numOfPages = canvasMap.size;
+    const ocrPromises: Promise<void>[] = [];
+
+    for (let i = this.startIndex; i <= numOfPages; i++) {
+      const canvas = canvasMap.get(i);
+      if (canvas) {
+        ocrPromises.push(
+          this.extractOcrTexts(pages, i, canvas, paddleOcrService)
+        );
+      }
+    }
+
+    await Promise.all(ocrPromises);
+    return pages;
   }
 
   private async getCanvas(
@@ -172,6 +203,91 @@ export class PdfReaderLegacy extends PdfReaderCommon {
     linesMap.set(pageNum, {
       words: textsFiltered,
       fullText,
+    });
+  }
+
+  private async extractOcrTexts(
+    linesMap: PageTexts,
+    pageNum: number,
+    canvas: Canvas,
+    paddleOcrService: PaddleOcrService
+  ): Promise<void> {
+    try {
+      const ocrResult = await paddleOcrService.recognize(canvas);
+      const pdfWords: PdfWord[] = this.convertOcrToPdfWords(ocrResult, pageNum);
+
+      let textsSorted = this.options.simpleSortAlgorithm
+        ? this.sortTextContentSimple(pdfWords)
+        : this.sortTextContent(pdfWords);
+
+      if (!this.options.raw) {
+        textsSorted = this.removeFakeBold(textsSorted);
+      }
+
+      const textsMerged = this.options.mergeCloseTextNeighbor
+        ? this.mergeTextContent(textsSorted)
+        : textsSorted;
+
+      const canvasHeight = canvas.height;
+      const textsFiltered = this.filterTextContent(textsMerged, canvasHeight);
+      const fullText = textsFiltered.map((word) => word.text).join(" ");
+
+      linesMap.set(pageNum, {
+        words: textsFiltered,
+        fullText,
+      });
+    } catch (error) {
+      if (this.options.verbose) {
+        console.warn(`OCR failed for page ${pageNum}:`, error);
+      }
+      linesMap.set(pageNum, {
+        words: [],
+        fullText: "",
+      });
+    }
+  }
+
+  private convertOcrToPdfWords(
+    ocrResult: PaddleOcrResult,
+    pageNum: number
+  ): PdfWord[] {
+    if (!ocrResult?.lines || !Array.isArray(ocrResult.lines)) {
+      return [];
+    }
+
+    return ocrResult.lines.flatMap((line) => {
+      if (!Array.isArray(line)) return [];
+
+      return line.map((recognition) => {
+        const { x, y, width, height } = recognition.box;
+
+        return {
+          text: recognition.text,
+          bbox: {
+            x0: Math.round(x),
+            y0: Math.round(y),
+            x1: Math.round(x + width),
+            y1: Math.round(y + height),
+          },
+          dimension: {
+            width: Math.round(width),
+            height: Math.round(height),
+          },
+          metadata: {
+            writing: "",
+            direction: "",
+            font: {
+              name: "",
+              size: height,
+              family: "",
+              weight: "" as const,
+              style: "" as const,
+            },
+            hasEOL: false,
+            pageNum,
+          },
+        };
+      });
     });
   }
 
