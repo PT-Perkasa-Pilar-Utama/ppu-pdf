@@ -81,6 +81,17 @@ export interface PdfWord {
 }
 
 /**
+ * Represents a single word extracted from a PDF in TOON Format.
+ */
+export interface PdfToonWord {
+  /** The extracted text. */
+  text: string;
+
+  /** The bounding box of the word [x,y,x1,y1] */
+  bbox: [number, number, number, number];
+}
+
+/**
  * Represents all words extracted from a page.
  */
 export interface PdfTexts {
@@ -89,6 +100,12 @@ export interface PdfTexts {
 
   /** The full text of extracted words */
   fullText: string;
+
+  /** The full confidence of text extraction */
+  confidence: number;
+
+  /** The full text of extracted words in toon notation for LLM-friendly input */
+  toon: string;
 }
 
 /**
@@ -112,6 +129,11 @@ export interface PdfLine {
 }
 
 /**
+ * Represents a single line of text in a PDF in TOON format.
+ */
+export type PdfToonLine = Record<string, PdfToonWord[]>;
+
+/**
  * Represents a mapping of page numbers to their corresponding extracted texts.
  */
 export type PageTexts = Map<number, PdfTexts>;
@@ -120,6 +142,11 @@ export type PageTexts = Map<number, PdfTexts>;
  * Represents a mapping of page numbers to their corresponding extracted lines.
  */
 export type PageLines = Map<number, PdfLine[]>;
+
+/**
+ * Represents a lines in a string formmat of TOON.
+ */
+export type PageToonLines = string;
 
 /**
  * Represents a compact version of a PDF word with only text and bounding box.
@@ -200,6 +227,9 @@ export interface PdfReaderOptions {
 
   /** List of fonts used in the document. */
   fonts: PdfFont[];
+
+  /** Whether to turn on/off toon notation format extraction for LLM-friendly text */
+  enableToon: boolean;
 }
 
 /**

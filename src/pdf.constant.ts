@@ -50,4 +50,7 @@ export const PDF_READER_DEFAULT_OPTIONS: PdfReaderOptions = {
 
   /** List of fonts to be used in the document. */
   fonts: [],
+
+  /** Whether to turn on/off toon notation format extraction for LLM-friendly text */
+  enableToon: false,
 };

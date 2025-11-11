@@ -13,6 +13,7 @@ import {
   type CompactPageLines,
   type PageLines,
   type PageTexts,
+  type PageToonLines,
   type PdfCompactLineAlgorithm,
   type PdfReaderOptions,
   type PdfScannedThreshold,
@@ -207,6 +208,8 @@ export class PdfReader extends PdfReaderCommon {
     linesMap.set(pageNum, {
       words: textsFiltered,
       fullText,
+      confidence: 1,
+      toon: this.getToonWords(textsFiltered, this.options.enableToon),
     });
   }
 
@@ -239,6 +242,8 @@ export class PdfReader extends PdfReaderCommon {
       linesMap.set(pageNum, {
         words: textsFiltered,
         fullText,
+        confidence: ocrResult.confidence,
+        toon: this.getToonWords(textsFiltered, this.options.enableToon),
       });
     } catch (error) {
       if (this.options.verbose) {
@@ -247,6 +252,8 @@ export class PdfReader extends PdfReaderCommon {
       linesMap.set(pageNum, {
         words: [],
         fullText: "",
+        confidence: 0,
+        toon: "",
       });
     }
   }
@@ -444,6 +451,15 @@ export class PdfReader extends PdfReaderCommon {
    */
   getLinesFromTexts(pageTexts: PageTexts): PageLines {
     return this.getLinesFromTextsCommon(pageTexts, this.startIndex);
+  }
+
+  /**
+   * Converts extracted text into TOON format string for LLM-friendly input.
+   * @param pageTexts - The extracted text data from a PDF.
+   * @returns A string of TOON format
+   */
+  getLinesFromTextsInToon(pageTexts: PageTexts): PageToonLines {
+    return this.getLinesFromTextsInToonCommon(pageTexts, this.startIndex);
   }
 
   /**

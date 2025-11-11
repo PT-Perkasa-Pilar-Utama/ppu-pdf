@@ -7,6 +7,7 @@ There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pd
 ## Features
 
 - **Text Extraction:** Retrieve all text content from a PDF.
+- **LLM-Friendly Text Extraction:** Retrieve all text content while maintaining bbox and encode in Token Object Notation (TOON).
 - **Coordinate Data:** Get precise bounding box and dimension information for each text element.
 - **Line Grouping:** Merge individual text tokens into coherent lines.
 - **Scanned PDF Detection:** Determine if a PDF/individual page appears to be scanned or digitally generated.
@@ -16,23 +17,24 @@ There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pd
 
 ## Differences
 
-| Indicator                  | PdfReader | PdfReaderLegacy |
-| -------------------------- | --------- | --------------- |
-| Library                    | mupdfjs   | pdfjs-dist      |
-| Pages index start          | 0         | 1               |
-| open()                     | ✅        | ✅              |
-| getTexts()                 | ✅        | ✅              |
-| getTextsScanned()          | ✅        | ✅              |
-| isScanned()                | ✅        | ✅              |
-| isPageScanned()            | ✅        | ✅              |
-| getLinesFromTexts()        | ✅        | ✅              |
-| getCompactLinesFromTexts() | ✅        | ✅              |
-| destroy()                  | ✅        | ✅              |
-| destroyPage()              | ✅        | ❌              |
-| renderAll()                | ✅        | ✅              |
-| saveCanvasToPng()          | ✅        | ✅              |
-| dumpCanvasMap()            | ✅        | ✅              |
-| Resize viewport/Custom DPI | ✅        | ✅              |
+| Indicator                           | PdfReader | PdfReaderLegacy |
+| ----------------------------------- | --------- | --------------- |
+| Library                             | mupdfjs   | pdfjs-dist      |
+| Pages index start                   | 0         | 1               |
+| open()                              | ✅        | ✅              |
+| getTexts()                          | ✅        | ✅              |
+| getTextsScanned()                   | ✅        | ✅              |
+| isScanned()                         | ✅        | ✅              |
+| isPageScanned()                     | ✅        | ✅              |
+| getLinesFromTexts()                 | ✅        | ✅              |
+| getCompactLinesFromTexts()          | ✅        | ✅              |
+| destroy()                           | ✅        | ✅              |
+| destroyPage()                       | ✅        | ❌              |
+| renderAll()                         | ✅        | ✅              |
+| saveCanvasToPng()                   | ✅        | ✅              |
+| dumpCanvasMap()                     | ✅        | ✅              |
+| Resize viewport/Custom DPI          | ✅        | ✅              |
+| pdfReader.getLinesFromTextsInToon() | ✅        | ✅              |
 
 ## Benchmark
 
@@ -204,6 +206,7 @@ Configuration options for `PdfReader`, allowing customization of PDF text extrac
 | `mergeCloseTextNeighbor`     | `boolean` | `true`        | Merges text elements that are close to each other into a single entity.     |
 | `simpleSortAlgorithm`        | `boolean` | `false`       | Uses a simplified sorting algorithm for text positioning.                   |
 | `scale`                      | `number`  | `1`           | The pdf document scale                                                      |
+| `enableToon`                 | `boolean` | `false`       | To enable pdf words extraction in TOON format                               |
 
 ### Usage Example:
 

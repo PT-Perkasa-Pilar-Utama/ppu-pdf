@@ -2,6 +2,7 @@ import { createCanvas, type Canvas } from "@napi-rs/canvas";
 import { createWriteStream, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 
+import { encode } from "@toon-format/toon";
 import { CONSTANT } from "./pdf.constant";
 import {
   type CompactPageLines,
@@ -9,9 +10,11 @@ import {
   type CompactPdfWord,
   type PageLines,
   type PageTexts,
+  type PageToonLines,
   type PdfCompactLineAlgorithm,
   type PdfLine,
   type PdfScannedThreshold,
+  type PdfToonLine,
   type PdfWord,
 } from "./pdf.interface";
 
@@ -388,5 +391,41 @@ export class PdfReaderCommon {
       normalizedText.length < options.textLength;
 
     return isWordsBelowThreshold || isTextLengthBelowThreshold;
+  }
+
+  protected getToonWords(pdfWords: PdfWord[], enableToon: boolean): string {
+    if (!enableToon) return "";
+
+    const simplifyWords = pdfWords.map((word) => ({
+      text: word.text,
+      bbox: [word.bbox.x0, word.bbox.y0, word.bbox.x1, word.bbox.y1],
+    }));
+
+    return encode(simplifyWords);
+  }
+
+  protected getLinesFromTextsInToonCommon(
+    pageTexts: PageTexts,
+    startIndex = 0
+  ): PageToonLines {
+    let pageLines: PageToonLines = "";
+    const numOfPages = pageTexts.size;
+
+    for (let i = startIndex; i < numOfPages + startIndex; i++) {
+      const pdfText = pageTexts.get(i);
+      let lines: PdfToonLine = {};
+      if (pdfText) {
+        lines = this.getLines(pdfText.words).reduce((acc, word, index) => {
+          acc[`${index}`] = word.words.map((el) => ({
+            text: el.text,
+            bbox: [el.bbox.x0, el.bbox.y0, el.bbox.x0, el.bbox.y1],
+          }));
+          return acc;
+        }, {} as PdfToonLine);
+      }
+      pageLines += `# Page ${i} lines:\n ${encode(lines)}\n`;
+    }
+
+    return pageLines;
   }
 }
