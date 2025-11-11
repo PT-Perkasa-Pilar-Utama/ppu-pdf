@@ -17,7 +17,7 @@ const lines = pdfReader.getLinesFromTexts(texts);
 console.log("lines: ", lines.get(0));
 
 const linesInToon = pdfReader.getLinesFromTextsInToon(texts);
-console.log("lines in toon: ", linesInToon);
+console.log("lines in toon: \n\n", linesInToon);
 
 const isScanned = pdfReader.isScanned(texts);
 console.log("is pdf scanned: ", isScanned);

@@ -83,14 +83,7 @@ export interface PdfWord {
 /**
  * Represents a single word extracted from a PDF in TOON Format.
  */
-export interface PdfToonWord {
-  /** The extracted text. */
-  text: string;
-
-  /** The bounding box of the word [x,y,x1,y1] */
-  bbox: [number, number, number, number];
-}
-
+export type PdfToonWord = Record<string, string>;
 /**
  * Represents all words extracted from a page.
  */
@@ -131,7 +124,7 @@ export interface PdfLine {
 /**
  * Represents a single line of text in a PDF in TOON format.
  */
-export type PdfToonLine = Record<string, PdfToonWord[]>;
+export type PdfToonLine = Record<string, PdfToonWord>;
 
 /**
  * Represents a mapping of page numbers to their corresponding extracted texts.

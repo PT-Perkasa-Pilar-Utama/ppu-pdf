@@ -15,6 +15,7 @@ import {
   type PdfLine,
   type PdfScannedThreshold,
   type PdfToonLine,
+  type PdfToonWord,
   type PdfWord,
 } from "./pdf.interface";
 
@@ -416,10 +417,11 @@ export class PdfReaderCommon {
       let lines: PdfToonLine = {};
       if (pdfText) {
         lines = this.getLines(pdfText.words).reduce((acc, word, index) => {
-          acc[`${index}`] = word.words.map((el) => ({
-            text: el.text,
-            bbox: [el.bbox.x0, el.bbox.y0, el.bbox.x0, el.bbox.y1],
-          }));
+          acc[`${index}`] = word.words.reduce((acc2, word2) => {
+            const bboxKey = `${word2.bbox.x0},${word2.bbox.y0},${word2.bbox.x1},${word2.bbox.y1}`;
+            acc2[bboxKey] = word2.text;
+            return acc2;
+          }, {} as PdfToonWord);
           return acc;
         }, {} as PdfToonLine);
       }
