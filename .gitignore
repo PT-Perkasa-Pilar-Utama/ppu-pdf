@@ -6,3 +6,5 @@ bun.lock
 lib
 out/*
 dist/*
+
+sandbox
