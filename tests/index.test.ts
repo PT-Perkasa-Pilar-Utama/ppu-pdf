@@ -2,7 +2,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { existsSync, readdirSync, unlinkSync } from "fs";
 import { join } from "path";
 import { PaddleOcrService } from "ppu-paddle-ocr";
-import { PdfReader } from "../src/pdf-reader";
+import { PdfReader } from "../src/pdf-reader.js";
 
 const pdfReader = new PdfReader();
 const file = Bun.file("./assets/opposite-expectation.pdf");

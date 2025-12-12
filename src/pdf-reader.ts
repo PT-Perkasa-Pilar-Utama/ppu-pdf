@@ -1,13 +1,13 @@
-import "./mupdf-workaround";
+import "./mupdf-workaround.js";
 
 import { Canvas, createCanvas, GlobalFonts, ImageData } from "@napi-rs/canvas";
 import { existsSync, readFileSync } from "fs";
 
 import { Document, Page, type PDFPage } from "mupdf";
-import { type DocumentStructure } from "./mupdf.interface";
+import { type DocumentStructure } from "./mupdf.interface.js";
 
-import { PdfReaderCommon } from "./pdf-reader-common";
-import { CONSTANT, PDF_READER_DEFAULT_OPTIONS } from "./pdf.constant";
+import { PdfReaderCommon } from "./pdf-reader-common.js";
+import { CONSTANT, PDF_READER_DEFAULT_OPTIONS } from "./pdf.constant.js";
 import {
   type CanvasMap,
   type CompactPageLines,
@@ -18,7 +18,7 @@ import {
   type PdfReaderOptions,
   type PdfScannedThreshold,
   type PdfWord,
-} from "./pdf.interface";
+} from "./pdf.interface.js";
 
 import { type PaddleOcrResult, type PaddleOcrService } from "ppu-paddle-ocr";
 

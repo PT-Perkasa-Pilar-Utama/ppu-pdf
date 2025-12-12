@@ -3,7 +3,7 @@ import { createWriteStream, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 
 import { encode } from "@toon-format/toon";
-import { CONSTANT } from "./pdf.constant";
+import { CONSTANT } from "./pdf.constant.js";
 import {
   type CompactPageLines,
   type CompactPdfLine,
@@ -17,7 +17,7 @@ import {
   type PdfToonLine,
   type PdfToonWord,
   type PdfWord,
-} from "./pdf.interface";
+} from "./pdf.interface.js";
 
 export class PdfReaderCommon {
   async saveCanvasToPng(

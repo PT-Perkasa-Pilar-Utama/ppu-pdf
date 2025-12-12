@@ -1,4 +1,4 @@
-import type { PdfReaderOptions } from "./pdf.interface";
+import type { PdfReaderOptions } from "./pdf.interface.js";
 
 /**
  * A collection of constant values used for PDF processing thresholds.

@@ -1,7 +1,7 @@
 export { PdfReader } from "./pdf-reader";
-export { PdfReaderLegacy } from "./pdf-reader-legacy";
+export { PdfReaderLegacy } from "./pdf-reader-legacy.js";
 
-export { CONSTANT } from "./pdf.constant";
+export { CONSTANT } from "./pdf.constant.js";
 
 export type {
   CanvasMap,
@@ -20,6 +20,6 @@ export type {
   PdfScannedThreshold,
   PdfTexts,
   PdfWord,
-} from "./pdf.interface";
+} from "./pdf.interface.js";
 
-export type { PdfToken } from "./pdfjs.interface";
+export type { PdfToken } from "./pdfjs.interface.js";

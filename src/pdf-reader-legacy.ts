@@ -1,12 +1,12 @@
 import "pdfjs-dist/build/pdf.worker.min.mjs";
-import "./pdfjs-workaround";
+import "./pdfjs-workaround.js";
 
 import { createCanvas, GlobalFonts, type Canvas } from "@napi-rs/canvas";
 import { existsSync, readFileSync } from "fs";
 
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 
-import { type PdfToken } from "./pdfjs.interface";
+import { type PdfToken } from "./pdfjs.interface.js";
 
 import {
   type DocumentInitParameters,
@@ -15,9 +15,9 @@ import {
 } from "pdfjs-dist/types/src/display/api";
 import { type PDFPageProxy } from "pdfjs-dist/types/web/interfaces";
 
-import { NodeCanvasFactory } from "./canvas-factory";
-import { PdfReaderCommon } from "./pdf-reader-common";
-import { CONSTANT, PDF_READER_DEFAULT_OPTIONS } from "./pdf.constant";
+import { NodeCanvasFactory } from "./canvas-factory.js";
+import { PdfReaderCommon } from "./pdf-reader-common.js";
+import { CONSTANT, PDF_READER_DEFAULT_OPTIONS } from "./pdf.constant.js";
 import {
   type CanvasMap,
   type CompactPageLines,
@@ -28,7 +28,7 @@ import {
   type PdfReaderOptions,
   type PdfScannedThreshold,
   type PdfWord,
-} from "./pdf.interface";
+} from "./pdf.interface.js";
 
 import { type PaddleOcrResult, type PaddleOcrService } from "ppu-paddle-ocr";
 
