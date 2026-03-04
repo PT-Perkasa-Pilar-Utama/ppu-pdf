@@ -8,12 +8,12 @@ import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 
 import { type PdfToken } from "./pdfjs.interface.js";
 
-import {
-  type DocumentInitParameters,
-  type TextItem,
-  type TextMarkedContent,
-} from "pdfjs-dist/types/src/display/api.js";
-import { type PDFPageProxy } from "pdfjs-dist/types/web/interfaces.js";
+import type {
+  DocumentInitParameters,
+  TextItem,
+  TextMarkedContent,
+} from "pdfjs-dist/types/src/display/api.d.ts";
+import type { PDFPageProxy } from "pdfjs-dist/types/web/interfaces.d.ts";
 
 import { NodeCanvasFactory } from "./canvas-factory.js";
 import { PdfReaderCommon } from "./pdf-reader-common.js";
