@@ -22,22 +22,22 @@
 import * as pdfjs from "pdfjs-dist";
 
 import {
-  type TextItem,
-  type TextMarkedContent,
-} from "pdfjs-dist/types/src/display/api";
-import { type PDFPageProxy } from "pdfjs-dist/types/web/interfaces";
+    type TextItem,
+    type TextMarkedContent,
+} from "pdfjs-dist/types/src/display/api.js";
+import { type PDFPageProxy } from "pdfjs-dist/types/web/interfaces.js";
 
 import { BasePdfReaderCommon } from "../core/base-pdf-reader-common.js";
 import { CONSTANT, PDF_READER_DEFAULT_OPTIONS } from "../pdf.constant.js";
 import {
-  type CompactPageLines,
-  type PageLines,
-  type PageTexts,
-  type PageToonLines,
-  type PdfCompactLineAlgorithm,
-  type PdfReaderOptions,
-  type PdfScannedThreshold,
-  type PdfWord,
+    type CompactPageLines,
+    type PageLines,
+    type PageTexts,
+    type PageToonLines,
+    type PdfCompactLineAlgorithm,
+    type PdfReaderOptions,
+    type PdfScannedThreshold,
+    type PdfWord,
 } from "../pdf.interface.js";
 import { type PdfToken } from "../pdfjs.interface.js";
 

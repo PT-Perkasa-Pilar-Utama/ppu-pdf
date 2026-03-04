@@ -12,8 +12,8 @@ import {
   type DocumentInitParameters,
   type TextItem,
   type TextMarkedContent,
-} from "pdfjs-dist/types/src/display/api";
-import { type PDFPageProxy } from "pdfjs-dist/types/web/interfaces";
+} from "pdfjs-dist/types/src/display/api.js";
+import { type PDFPageProxy } from "pdfjs-dist/types/web/interfaces.js";
 
 import { NodeCanvasFactory } from "./canvas-factory.js";
 import { PdfReaderCommon } from "./pdf-reader-common.js";
