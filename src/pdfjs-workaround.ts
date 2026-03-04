@@ -10,7 +10,7 @@ if (!globalThis.process.getBuiltinModule) {
       return { createRequire };
     }
     throw new Error(
-      `process.getBuiltinModule is not implemented for module: ${name}`
+      `process.getBuiltinModule is not implemented for module: ${name}`,
     );
   };
 }

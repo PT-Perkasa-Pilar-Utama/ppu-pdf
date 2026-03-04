@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ppu-pdf — Web PDF Text Extraction Demo</title>
+  <meta name="description" content="Extract text from digital & scanned PDFs in the browser with ppu-pdf. Text extraction, line grouping, TOON format, scanned detection, and OCR." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style type="text/tailwindcss">
+    /* ── From docscan-2 ─────────────────────── */
+    .card { background-color: white; padding: 0; border-radius: 0.5rem; }
+    .hide-scroll-bar::-webkit-scrollbar { display: none; }
+    .hide-scroll-bar { -ms-overflow-style: none; scrollbar-width: none; }
+    .shadow-top { box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.8); }
+    input::-webkit-outer-spin-button, 
+    input::-webkit-inner-spin-button { 
+      -webkit-appearance: none; 
+      appearance: none; 
+      margin: 0; 
+    }
+    input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+    .scrollbar-thumb::-webkit-scrollbar { width: 0.00001px !important; }
+    ::-webkit-scrollbar { width: 15px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 0.375rem; }
+    ::-webkit-scrollbar-thumb:hover { background-color: #111827; }
+    .scrollbar-gutter { scrollbar-gutter: stable; }
+    .magnifier { position: absolute; z-index: 50; border: 1px solid white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); cursor: zoom-in; width: 100px; height: 100px; pointer-events: none; }
+    
+    body { background-color: black; min-height: 100vh; margin: 0; overflow: hidden; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    
+    /* Overlay for bounding boxes */
+    .bbox-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 10; }
+    .bbox { position: absolute; pointer-events: auto; }
+  </style>
+</head>
+<body class="bg-black relative">
+  <div class="relative h-screen overflow-hidden flex flex-col">
+    <!-- Header Area -->
+    <div class="m-2 overflow-hidden flex-none">
+      <div class="flex justify-between items-center text-white mb-1">
+        <div class="flex items-center gap-5 justify-center content-center">
+          <a href="#" class="text-xl lg:text-2xl font-bold">ppu-pdf</a>
+          <a href="https://github.com/snowfluke/ppu-pdf" target="_blank" title="GitHub Repository" class="flex items-center text-gray-400 hover:text-white transition">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path></svg>
+          </a>
+          <a href="https://www.npmjs.com/package/ppu-pdf" target="_blank" title="NPM Package" class="flex items-center text-gray-400 hover:text-white transition">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H3.334v-4h3.332v4zm7.334 1.332H12V14h-1.334V8.666H14v6.664zm6.666-1.332h-2.666V8.666H20.666v5.332z"></path></svg>
+          </a>
+          <p class="text-xs lg:text-sm hidden" id="statusHeader">
+            Data extracted within your device in <span id="timeVal" class="font-bold underline">0.00</span>s.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-gray-400 hidden" id="loaderText">Processing...</span>
+          <div class="flex items-center gap-1.5" title="PaddleOCR Native Engine Status">
+             <span id="ocrStatusLabel" class="text-xs font-bold text-red-500 uppercase tracking-widest hidden lg:block animate-pulse">Loading ppu-paddle-ocr...</span>
+             <div id="ocrStatusDot" class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+          </div>
+          <button id="uploadBtn" class="text-sm bg-gray-800 rounded text-white py-1 px-3 hover:bg-gray-700 font-medium opacity-50 cursor-wait">
+            Upload PDF
+          </button>
+          <input type="file" id="fileInput" class="hidden" accept=".pdf,application/pdf" />
+        </div>
+      </div>
+
+      <!-- Main Grid Layout (docscan-2 style) -->
+      <div class="grid grid-rows-2 grid-cols-12 gap-2 max-h-[90vh] mt-2 overflow-hidden h-[90vh]" id="resultsArea">
+
+        <!-- Left Column: Thumbnail + Preview Buttons + Main Image -->
+        <div class="hidden lg:flex flex-col gap-2 col-span-5 row-span-2 h-full min-h-0">
+          <!-- Action Buttons Bar -->
+          <div class="hidden lg:flex bg-white px-3 py-2 rounded-lg items-center justify-between shadow-sm">
+            <div class="flex flex-row bg-slate-800 rounded-md overflow-hidden" id="vizToggles">
+              <button class="capitalize text-white flex bg-red-700 px-4 py-1 text-sm font-medium" data-val="preview">
+                PREVIEW
+              </button>
+              <button class="capitalize text-white flex px-4 py-1 text-sm font-medium hover:bg-slate-700 transition" data-val="lines">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="opacity-80 drop-shadow-sm" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <span class="pl-1 text-red-500 font-bold">LINES</span>
+              </button>
+              <button class="capitalize text-white flex px-4 py-1 text-sm font-medium hover:bg-slate-700 transition" data-val="words">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="opacity-80 drop-shadow-sm" stroke="currentColor" stroke-width="2"><path d="M4 6h6M14 6h6M4 12h16M4 18h6M14 18h6"></path></svg>
+                <span class="pl-1 text-green-500 font-bold">WORDS</span>
+              </button>
+            </div>
+            
+
+
+            <h3 class="font-bold text-sm text-gray-700">
+              <span id="scannedBadge" class="hidden text-amber-600">⚠ Likely Scanned</span>
+              <span id="digitalBadge" class="hidden text-green-600">✓ Digital PDF</span>
+            </h3>
+          </div>
+
+          <!-- Preview Card -->
+          <div class="bg-white p-0 rounded-lg flex-1 relative flex flex-col min-h-0 overflow-hidden">
+            <div class="flex flex-col gap-1 p-3 flex-1 overflow-hidden" id="previewContainer">
+              <div class="overflow-auto h-full w-full rounded-lg relative scrollbar-gutter bg-gray-50 bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABZJREFUeNpi2rV79282BgYwgRoEAgQYAFmRA2r8v10MAAAAAElFTkSuQmCC')] bg-repeat" id="canvasScrollArea">
+                <div class="flex items-center justify-center h-full w-full absolute top-0 left-0 pointer-events-none z-10" id="emptyPreviewWrapper">
+                  <span class="text-gray-400 text-sm" id="emptyPreview" style="pointer-events: auto;">Upload a PDF to view</span>
+                </div>
+                
+                <!-- The Flex container safely buffers the pdf to the center if it is smaller, or allows native top-left scroll if it is larger -->
+                <div class="min-w-full min-h-full w-max h-max flex items-center justify-center p-6" id="zoomContainer">
+                  <div id="pageContainer" class="relative hidden shadow-lg bg-white transition-all duration-200 flex-shrink-0">
+                    <!-- The active canvas and bbox overlay goes here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Options Footer (Zoom + Pagination) -->
+            <div class="sticky bottom-4 flex flex-row justify-between w-full px-4 items-end pointer-events-none hidden" id="previewFooter">
+              <!-- Zoom Controls (Bottom Left) -->
+              <div class="flex flex-row shadow-sm pointer-events-auto h-8 opacity-90 transition hover:opacity-100">
+                 <button id="zoomOutBtn" class="bg-gray-800 text-white w-8 h-full flex items-center justify-center hover:bg-red-700 rounded-l-md transition font-bold text-lg leading-none border-r border-gray-600" title="Zoom Out">-</button>
+                 <div class="bg-gray-800 text-white flex items-center justify-center border-r border-gray-600 font-mono font-medium">
+                    <span id="zoomIndicator" class="text-xs w-12 text-center">100%</span>
+                 </div>
+                 <button id="zoomInBtn" class="bg-gray-800 text-white w-8 h-full flex items-center justify-center hover:bg-red-700 rounded-r-md transition font-bold text-lg leading-none" title="Zoom In">+</button>
+              </div>
+
+              <!-- Pagination (Bottom Right) -->
+              <div class="flex flex-row shadow-sm pointer-events-auto h-8 opacity-90 transition hover:opacity-100" id="pagination">
+                <button type="button" id="prevBtn" class="bg-gray-800 text-white rounded-l-md border-r border-gray-600 py-1 hover:bg-red-700 hover:text-white px-3 text-sm flex items-center disabled:opacity-50 disabled:cursor-not-allowed transition">
+                  <span>&lt;</span><span class="ml-2">Prev</span>
+                </button>
+                <div class="bg-gray-800 text-white py-1 px-4 text-sm flex items-center border-r border-gray-600 font-mono font-medium">
+                  <span id="pageIndicator">1 / 1</span>
+                </div>
+                <button type="button" id="nextBtn" class="bg-gray-800 text-white rounded-r-md py-1 border-l border-gray-600 hover:bg-red-700 hover:text-white px-3 text-sm flex items-center disabled:opacity-50 disabled:cursor-not-allowed transition">
+                  <span class="mr-2">Next</span><span>&gt;</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: CardContainer (Data Output & Config) -->
+        <div class="bg-white p-0 rounded-lg row-span-2 col-span-12 lg:col-span-7 flex flex-col h-full min-h-0 shadow-sm">
+          
+          <!-- Configuration Header -->
+          <div class="border-b border-gray-200 p-3 bg-gray-50 rounded-t-lg flex flex-wrap gap-x-4 gap-y-3 text-xs text-gray-700 select-none items-center">
+            
+            <div class="flex flex-col gap-1 w-full border-b border-gray-200 pb-2 mb-1 lg:border-none lg:pb-0 lg:mb-0 lg:w-auto lg:flex-row lg:gap-4 lg:items-center">
+                <div class="flex items-center gap-2 cursor-pointer transition hover:text-red-700">
+                  <input type="checkbox" id="optExcludeHeader" checked class="w-3 h-3 cursor-pointer text-red-600 rounded border-gray-300 focus:ring-red-500" />
+                  <label for="optExcludeHeader" class="cursor-pointer font-medium">Exclude Header</label>
+                </div>
+                <div class="flex items-center gap-2 cursor-pointer transition hover:text-red-700">
+                  <input type="checkbox" id="optExcludeFooter" checked class="w-3 h-3 cursor-pointer text-red-600 rounded border-gray-300 focus:ring-red-500" />
+                  <label for="optExcludeFooter" class="cursor-pointer font-medium">Exclude Footer</label>
+                </div>
+                <div class="flex items-center gap-2 cursor-pointer transition hover:text-red-700">
+                  <input type="checkbox" id="optMerge" checked class="w-3 h-3 cursor-pointer text-red-600 rounded border-gray-300 focus:ring-red-500" />
+                  <label for="optMerge" class="cursor-pointer font-medium">Merge Close</label>
+                </div>
+                <div class="flex items-center gap-2 cursor-pointer transition hover:text-red-700">
+                  <input type="checkbox" id="optToon" class="w-3 h-3 cursor-pointer text-red-600 rounded border-gray-300 focus:ring-red-500" />
+                  <label for="optToon" class="cursor-pointer font-medium">Enable TOON</label>
+                </div>
+            </div>
+
+            <div class="h-4 w-[1px] bg-gray-300 hidden lg:block"></div>
+
+            <div class="flex items-center gap-3">
+              <label for="optAlgorithm" class="font-medium text-gray-500">Algorithm</label>
+              <select id="optAlgorithm" class="border border-gray-300 rounded px-1 py-0.5 bg-white outline-none focus:ring-red-500 cursor-pointer text-gray-700 font-medium">
+                <option value="middleY" selected>middleY</option>
+                <option value="y0">y0 (legacy)</option>
+              </select>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <label class="font-medium text-gray-500" title="Words per page threshold to flag document as Scanned">Scanned Threshold: Words</label>
+              <input type="number" id="optThresholdWords" value="10" class="w-12 border border-gray-300 rounded px-1 py-0.5" />
+              <label class="font-medium text-gray-500 ml-1" title="Minimum text character length threshold">Length</label>
+              <input type="number" id="optThresholdLength" value="50" class="w-12 border border-gray-300 rounded px-1 py-0.5" />
+            </div>
+            
+            <div class="flex items-center gap-2">
+               <label class="font-medium text-gray-500" title="DPI used accurately for canvas rendering">Render DPI</label>
+               <input type="number" id="optRenderDPI" value="72" step="12" class="w-12 border border-gray-300 rounded px-1 py-0.5" />
+            </div>
+
+            <div class="flex items-center gap-2 ml-auto">
+              <button id="reprocessBtn" class="text-red-700 hover:text-white bg-red-50 border border-red-200 hover:bg-red-600 px-3 py-1.5 rounded font-medium text-xs flex items-center gap-1 transition shadow-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"></path></svg>
+                Config & Reprocess
+              </button>
+            </div>
+          </div>
+          
+          <!-- Data Output Viewer Tabs -->
+          <div class="flex gap-1 px-3 pt-2 bg-white border-b border-gray-200" id="dataTabs">
+            <button data-tab="fulltext" class="px-3 py-1.5 text-xs font-semibold rounded-t-md border-b-2 border-red-600 text-red-600 transition">
+              Full Text
+            </button>
+            <button data-tab="words" class="px-3 py-1.5 text-xs font-semibold rounded-t-md border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition">
+              Words JSON
+            </button>
+            <button data-tab="lines" class="px-3 py-1.5 text-xs font-semibold rounded-t-md border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition">
+              Lines JSON
+            </button>
+            <button data-tab="compact" class="px-3 py-1.5 text-xs font-semibold rounded-t-md border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition">
+              Compact Lines
+            </button>
+            <button data-tab="toon" class="px-3 py-1.5 text-xs font-semibold rounded-t-md border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition">
+              TOON
+            </button>
+            <button id="copyBtn" class="ml-auto mb-1 px-3 py-1 bg-gray-50 border border-gray-200 text-gray-600 rounded text-xs hover:bg-gray-100 hover:text-gray-900 transition flex items-center gap-1 font-medium">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
+              Copy
+            </button>
+          </div>
+
+          <!-- Active Output Target -->
+          <div class="flex-1 overflow-auto bg-gray-50 p-4 relative font-mono text-sm leading-relaxed" id="outputArea">
+            <span class="text-gray-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" id="emptyOutput">Data will appear here after processing.</span>
+            <pre class="whitespace-pre-wrap text-gray-800 hidden" id="outputContent"></pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "pdfjs-dist": "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/+esm",
+      "pdfjs-dist/types/src/display/api": "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/+esm",
+      "pdfjs-dist/types/web/interfaces": "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/+esm",
+      "@toon-format/toon": "https://cdn.jsdelivr.net/npm/@toon-format/toon@2.1.0/+esm",
+      "onnxruntime-web": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.2/dist/ort.all.bundle.min.mjs",
+      "ppu-paddle-ocr/web": "https://cdn.jsdelivr.net/npm/ppu-paddle-ocr@4.0.2/web/index.js",
+      "ppu-ocv/web": "https://cdn.jsdelivr.net/npm/ppu-ocv@2/index.web.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+    // ── Import ppu-pdf/web from CDN ──────────────────
+    // We try jsdelivr first; in local dev ("bun run demo") we fall back to the built lib/
+    let ppuPdf;
+    try {
+      ppuPdf = await import("https://cdn.jsdelivr.net/npm/ppu-pdf@6/web/index.js");
+    } catch (cdnErr) {
+      console.log("CDN import failed, falling back to local lib/ (ensure you ran 'bun task build'). Error:", cdnErr);
+      try {
+        ppuPdf = await import("./lib/web/index.js");
+      } catch (localErr) {
+        console.error("Local import of ./lib/web/index.js failed. Did you run 'bun task build'? Error:", localErr);
+        ppuPdf = await import("./src/web/index.ts");
+      }
+    }
+    const { PdfReaderLegacyWeb } = ppuPdf;
+
+    // ── Global State ─────────────────────────────────
+    let reader = new PdfReaderLegacyWeb({ verbose: true });
+    let currentFile = null;
+    let currentResults = null; // { texts, pageLines, compactLines, isScanned, toonOutput, canvasMap, elapsed, numPages, options }
+    let currentPage = 1;
+    let currentTab = "fulltext"; // fulltext, words, lines, compact, toon
+    let activeViz = "preview";   // preview, lines, words
+    let zoomLevel = 1.0;
+    
+    // Globally eager-load PaddleOCR WebAssembly
+    window.globalOcrAdapter = null;
+    
+    // ── OCR Initialization (Top Level Await) ──────────────────────────────
+    const uploadWrapper = document.getElementById("uploadBtn");
+    const emptyOutputSpan = document.getElementById("emptyPreview");
+    const ocrDot = document.getElementById("ocrStatusDot");
+    const ocrLabel = document.getElementById("ocrStatusLabel");
+
+    uploadWrapper.classList.add("opacity-50", "cursor-wait");
+    emptyOutputSpan.innerHTML = `<span class="animate-pulse">Loading PaddleOCR Native Engine...</span>`;
+
+    try {
+      const { PaddleOcrService } = await import("ppu-paddle-ocr/web");
+      const service = new PaddleOcrService();
+      await service.initialize();
+
+      window.globalOcrAdapter = {
+        initialize: async () => {},
+        recognize: async (canvas) => {
+          emptyPreview.innerHTML = `<span class="animate-pulse">Running OCR...</span>`;
+          return await service.recognize(canvas);
+        }
+      };
+
+      ocrDot.classList.replace("bg-red-500", "bg-green-500");
+      ocrDot.classList.remove("animate-pulse");
+      ocrDot.classList.replace("shadow-[0_0_8px_rgba(239,68,68,0.8)]", "shadow-[0_0_8px_rgba(34,197,94,0.8)]");
+      ocrLabel.textContent = "PaddleOCR Ready";
+      ocrLabel.classList.remove("animate-pulse");
+      ocrLabel.classList.replace("text-red-500", "text-green-500");
+      emptyOutputSpan.innerHTML = `Upload a PDF to view`;
+    } catch (err) {
+      console.error("Critical OCR Initialization Failure:", err);
+      ocrDot.classList.replace("bg-red-500", "bg-yellow-500");
+      ocrDot.classList.remove("animate-pulse");
+      ocrDot.classList.replace("shadow-[0_0_8px_rgba(239,68,68,0.8)]", "shadow-[0_0_8px_rgba(234,179,8,0.8)]");
+      ocrLabel.textContent = "OCR Offline";
+      ocrLabel.classList.replace("text-red-500", "text-yellow-600");
+      emptyOutputSpan.innerHTML = `Native OCR Unavailable. Upload a PDF for standard reading.`;
+    } finally {
+      uploadWrapper.classList.remove("opacity-50", "cursor-wait");
+    }
+
+    // ── DOM refs ─────────────────────────────────────
+    const fileInput = document.getElementById("fileInput");
+    const loaderText = document.getElementById("loaderText");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const resultsArea = document.getElementById("resultsArea");
+    
+    // Header status
+    const statusHeader = document.getElementById("statusHeader");
+    const timeVal = document.getElementById("timeVal");
+    const scannedBadge = document.getElementById("scannedBadge");
+    const digitalBadge = document.getElementById("digitalBadge");
+
+    // Output area
+    const outputArea = document.getElementById("outputArea");
+    const outputContent = document.getElementById("outputContent");
+    const emptyOutput = document.getElementById("emptyOutput");
+    const copyBtn = document.getElementById("copyBtn");
+
+    // Canvas mapping
+    const canvasScrollArea = document.getElementById("canvasScrollArea");
+    const pageContainer = document.getElementById("pageContainer");
+    const emptyPreview = document.getElementById("emptyPreview");
+
+    // Pagination
+    const pagination = document.getElementById("pagination");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const pageIndicator = document.getElementById("pageIndicator");
+
+    // Visualization
+    const vizToggles = document.getElementById("vizToggles");
+    const zoomInBtn = document.getElementById("zoomInBtn");
+    const zoomOutBtn = document.getElementById("zoomOutBtn");
+    const zoomIndicator = document.getElementById("zoomIndicator");
+
+    // Config controls
+    const optExcludeHeader = document.getElementById("optExcludeHeader");
+    const optExcludeFooter = document.getElementById("optExcludeFooter");
+    const optMerge = document.getElementById("optMerge");
+    const optToon = document.getElementById("optToon");
+    const optAlgorithm = document.getElementById("optAlgorithm");
+    const optThresholdLength = document.getElementById("optThresholdLength");
+    const optThresholdWords = document.getElementById("optThresholdWords");
+    const optRenderDPI = document.getElementById("optRenderDPI");
+
+    // ── Zoom Management ──────────────────────────────
+    function updateZoom() {
+       zoomIndicator.textContent = Math.round(zoomLevel * 100) + "%";
+       
+       if (pageContainer && !pageContainer.classList.contains("hidden")) {
+           // We explicitly update dimensions so scrollbars track 100% properly
+           const canvas = currentResults?.canvasMap.get(currentPage);
+           if (!canvas) return;
+           
+           // Calculate base fit-to-screen scale for 100% zoom
+           const scrollArea = document.getElementById("canvasScrollArea");
+           
+           // We'll leave a small padding gap
+           const padding = 48;
+           const targetW = scrollArea.clientWidth - padding;
+           const targetH = scrollArea.clientHeight - padding;
+           
+           const scaleToFit = Math.min(targetW / canvas.width, targetH / canvas.height);
+           
+           // The "100%" base dimensions
+           const baseW = canvas.width * scaleToFit;
+           const baseH = canvas.height * scaleToFit;
+           
+           pageContainer.style.width = `${baseW * zoomLevel}px`;
+           pageContainer.style.height = `${baseH * zoomLevel}px`;
+           
+           // Scale inner graphics layers explicitly matching container
+           const displayImg = document.getElementById("renderedCanvasImg");
+           if (displayImg) {
+              displayImg.style.width = '100%';
+              displayImg.style.height = '100%';
+           }
+           const overlayWrapper = document.getElementById("overlayWrapper");
+           if (overlayWrapper) {
+               // Provide inner overlays a reference 
+               const transformScale = (scaleToFit * zoomLevel);
+               overlayWrapper.style.transform = `scale(${transformScale})`;
+           }
+       }
+    }
+
+    zoomInBtn.addEventListener("click", () => {
+       zoomLevel = Math.min(zoomLevel + 0.25, 3.0);
+       updateZoom();
+    });
+
+    zoomOutBtn.addEventListener("click", () => {
+       zoomLevel = Math.max(zoomLevel - 0.25, 1.0); // Never zoom below fit-to-screen
+       updateZoom();
+    });
+
+    // ── File upload ──────────────────────────────────
+    fileInput.addEventListener("change", (e) => {
+      if (e.target.files[0]) handleFile(e.target.files[0]);
+    });
+    uploadBtn.addEventListener("click", () => {
+      // Gate interaction until OCR WebAssembly compiles natively into Safari/Chrome
+      if (window.globalOcrAdapter === null) return;
+      fileInput.click();
+    });
+
+    async function handleFile(file) {
+      if (!file) return;
+      currentFile = file;
+      resultsArea.classList.remove("hidden");
+      await processBuffer(file.name);
+    }
+
+    // Re-process button
+    document.getElementById("reprocessBtn").addEventListener("click", () => {
+      if (currentFile) processBuffer("(re-process)");
+    });
+
+    // ── Tab switching ────────────────────────────────
+    document.getElementById("dataTabs").addEventListener("click", (e) => {
+      if (e.target.tagName !== "BUTTON" && !e.target.closest("button[data-tab]")) return;
+      const btn = e.target.closest("button[data-tab]");
+      if (!btn) return;
+      
+      document.querySelectorAll("#dataTabs button[data-tab]").forEach((t) => {
+        t.classList.remove("border-red-600", "text-red-600");
+        t.classList.add("border-transparent", "text-gray-500");
+      });
+      btn.classList.add("border-red-600", "text-red-600");
+      btn.classList.remove("border-transparent", "text-gray-500");
+      
+      currentTab = btn.dataset.tab;
+      renderOutputArea();
+    });
+
+    // ── Pagination ───────────────────────────────────
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderMainView();
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentResults && currentPage < currentResults.numPages) {
+        currentPage++;
+        renderMainView();
+      }
+    });
+
+    // ── Visualization ────────────────────────────────
+    vizToggles.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-val]");
+      if (!btn) return;
+
+      document.querySelectorAll("#vizToggles button").forEach((t) => t.classList.remove("bg-red-700"));
+      btn.classList.add("bg-red-700");
+      activeViz = btn.dataset.val;
+
+      renderMainView();
+    });
+
+    // ── Process ──────────────────────────────────────
+    async function processBuffer(filename) {
+      if (!currentFile) return;
+
+      loaderText.classList.remove("hidden");
+      loaderText.textContent = `Processing…`;
+      pageContainer.classList.add("hidden");
+      emptyPreview.classList.remove("hidden");
+      document.getElementById("emptyPreviewWrapper").classList.remove("hidden");
+      emptyPreview.innerHTML = `<span class="animate-pulse">Parsing PDF...</span>`;
+
+      await new Promise((r) => setTimeout(r, 50)); // let UI update
+
+      const options = {
+        excludeHeader: optExcludeHeader.checked,
+        excludeFooter: optExcludeFooter.checked,
+        raw: false,
+        mergeCloseTextNeighbor: optMerge.checked,
+        simpleSortAlgorithm: false,
+        enableToon: optToon.checked,
+        verbose: false,
+        headerFromHeightPercentage: 0.05,
+        footerFromHeightPercentage: 0.95,
+        scale: 1.5,
+      };
+
+      const thresholds = {
+        textLength: parseInt(optThresholdLength.value || "50", 10),
+        wordsPerPage: parseInt(optThresholdWords.value || "10", 10)
+      };
+      
+      const dpiConfig = parseInt(optRenderDPI.value || "72", 10);
+
+      try {
+        const t0 = performance.now();
+        
+        // Ensure pdf.worker.mjs is set to prevent error
+        window.pdfjsLib = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/+esm");
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/build/pdf.worker.mjs";
+
+        // Read buffer FRESH from file to prevent Detached ArrayBuffer Error on re-processing
+        const arrayBuffer = await currentFile.arrayBuffer();
+        
+        const pdf = await reader.open(arrayBuffer);
+
+        loaderText.textContent = "Extracting text…";
+        let texts = await reader.getTexts(pdf);
+
+        loaderText.textContent = "Checking scan heuristic…";
+        let isScanned = reader.isScanned(texts, thresholds);
+
+        // Render all pages for canvas display first (needed if we perform OCR)
+        let canvasMap = null;
+        try {
+          loaderText.textContent = `Rendering pages at ${dpiConfig} DPI…`;
+          canvasMap = await reader.renderAll(pdf, dpiConfig);
+        } catch (err) {
+          console.warn("Page rendering failed:", err);
+        }
+
+        // Apply OCR if necessary & possible (only if globalOcrAdapter initialized properly)
+        if (isScanned && canvasMap && window.globalOcrAdapter) {
+            try {
+              // Run the extraction utilizing the underlying reader's built-in box logic and our pre-inited engine
+              texts = await reader.getTextsScanned(window.globalOcrAdapter, canvasMap);
+            } catch(e) {
+              console.warn("Fallback Web OCR application failed, continuing with regular bounds", e);
+            }
+        }
+
+        loaderText.textContent = "Grouping lines…";
+        const pageLines = reader.getLinesFromTexts(texts);
+        const compactLines = reader.getCompactLinesFromTexts(texts, optAlgorithm.value);
+        
+        let toonOutput = "";
+        if (optToon.checked) {
+          toonOutput = reader.getLinesFromTextsInToon(texts);
+        }
+
+        const elapsed = ((performance.now() - t0)/1000).toFixed(2);
+
+        await reader.destroy(pdf);
+
+        currentResults = { texts, pageLines, compactLines, isScanned, toonOutput, canvasMap, elapsed, numPages: texts.size, options };
+        currentPage = 1;
+
+        updateHeaderStatus();
+        renderMainView(); 
+        renderOutputArea();
+
+        loaderText.classList.add("hidden");
+      } catch (err) {
+        loaderText.classList.add("hidden");
+        emptyPreview.classList.remove("hidden");
+        document.getElementById("emptyPreviewWrapper").classList.remove("hidden");
+        emptyPreview.innerHTML = `Error: <br/>${err.message}`;
+        console.error(err);
+      }
+    }
+
+    // ── Update Header ────────────────────────────────
+    function updateHeaderStatus() {
+      const r = currentResults;
+      if (!r) return;
+
+      statusHeader.classList.remove("hidden");
+      timeVal.textContent = r.elapsed;
+
+      if (r.isScanned) {
+        scannedBadge.classList.remove("hidden");
+        digitalBadge.classList.add("hidden");
+      } else {
+         // Reset for successful digital
+        scannedBadge.classList.add("hidden");
+        digitalBadge.classList.remove("hidden");
+      }
+
+      document.getElementById("previewFooter").classList.remove("hidden");
+    }
+
+    // ── Render Main Canvas View ──────────────────────
+    function renderMainView() {
+      if (!currentResults || !currentResults.canvasMap) return;
+      
+      const r = currentResults;
+      emptyPreview.classList.add("hidden");
+      document.getElementById("emptyPreviewWrapper").classList.add("hidden");
+      pageContainer.classList.remove("hidden");
+      pageContainer.innerHTML = "";
+      
+      // Update Pagination
+      pageIndicator.textContent = `${currentPage} / ${r.numPages}`;
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === r.numPages;
+
+      const canvas = r.canvasMap.get(currentPage);
+      if (!canvas) return;
+
+      // The rendered document image layer
+      // We apply width/height explicitly based on the wrapper calculations
+      const displayImg = document.createElement("img");
+      displayImg.id = "renderedCanvasImg";
+      displayImg.src = canvas.toDataURL("image/png");
+      displayImg.className = "pointer-events-none drop-shadow-md w-full h-full object-contain block transition-all duration-200";
+      
+      pageContainer.appendChild(displayImg);
+      
+      // A sizing wrapper to guarantee overlay matches relative layout strictly
+      const overlayWrapper = document.createElement("div");
+      overlayWrapper.id = "overlayWrapper";
+      // ensure we map completely over the canvas boundaries
+      overlayWrapper.className = "absolute top-0 left-0 transition-transform duration-200 origin-top-left pointer-events-none";
+      overlayWrapper.style.width = canvas.width + "px";
+      overlayWrapper.style.height = canvas.height + "px";
+
+      // Bounding boxes overlay
+      if (activeViz !== "preview") {
+        const overlay = document.createElement("div");
+        overlay.className = "bbox-overlay";
+        
+        const pageData = r.texts.get(currentPage);
+        
+        // Rendered Width scaling. If actual width of img is different from canvas internal width.
+        const cWidth = canvas.width;
+        const cHeight = canvas.height;
+        
+        // Copy handler
+        const onClickCopy = (e, text) => {
+           navigator.clipboard.writeText(text);
+           const pop = document.createElement("div");
+           pop.className = "fixed bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg pointer-events-none z-[9999]";
+           pop.style.left = `${e.clientX + 10}px`;
+           pop.style.top = `${e.clientY - 20}px`;
+           pop.innerText = "Copied!";
+           document.body.appendChild(pop);
+           setTimeout(() => pop.remove(), 1000);
+        };
+
+        if (activeViz === "words" && pageData && pageData.words) {
+          pageData.words.forEach(word => {
+            const bbox = document.createElement("div");
+            bbox.className = "bbox border border-green-500 bg-green-500/10 cursor-alias";
+            
+            // Map coordinates scaling directly to CSS top/left percentages relative to the physical container
+            // Use Math.max locally over explicit scale modifiers, adjusting only base percentage logic.
+            const pX0 = (word.bbox.x0 / cWidth) * 100;
+            const pY0 = (word.bbox.y0 / cHeight) * 100;
+            const pX1 = (word.bbox.x1 / cWidth) * 100;
+            const pY1 = (word.bbox.y1 / cHeight) * 100;
+            
+            bbox.style.left = `${pX0}%`;
+            bbox.style.top = `${pY0}%`;
+            bbox.style.width = `${pX1 - pX0}%`;
+            bbox.style.height = `${pY1 - pY0}%`;
+            bbox.title = `${word.text}\n(Click to copy JSON)`;
+
+            bbox.onclick = (e) => onClickCopy(e, JSON.stringify(word));
+            overlay.appendChild(bbox);
+          });
+        } 
+        else if (activeViz === "lines") {
+          const lines = r.pageLines.get(currentPage);
+          if (lines) {
+            lines.forEach(line => {
+              const bbox = document.createElement("div");
+              bbox.className = "bbox border-2 border-red-500 bg-red-500/10 cursor-alias";
+              
+              // Map coordinates scaling directly to CSS top/left percentages relative to the physical container
+              const pX0 = (line.bbox.x0 / cWidth) * 100;
+              const pY0 = (line.bbox.y0 / cHeight) * 100;
+              const pX1 = (line.bbox.x1 / cWidth) * 100;
+              const pY1 = (line.bbox.y1 / cHeight) * 100;
+              
+              bbox.style.left = `${pX0}%`;
+              bbox.style.top = `${pY0}%`;
+              bbox.style.width = `${pX1 - pX0}%`;
+              bbox.style.height = `${pY1 - pY0}%`;
+              bbox.title = `${line.text}\nLines: ${line.words?.length || '?'}\n(Click to copy JSON)`;
+
+              bbox.onclick = (e) => onClickCopy(e, JSON.stringify(line));
+              overlay.appendChild(bbox);
+            });
+          }
+        }
+
+        overlayWrapper.appendChild(overlay);
+      }
+      
+      pageContainer.appendChild(overlayWrapper);
+      
+      // Force zoom update to recalculate explicit bounds now that canvas width is established
+      updateZoom();
+    }
+
+
+    function renderOutputArea() {
+      if (!currentResults) return;
+      const r = currentResults;
+      
+      emptyOutput.classList.add("hidden");
+      outputContent.classList.remove("hidden");
+
+      switch (currentTab) {
+        case "fulltext": {
+          let text = "";
+          r.texts.forEach((page, num) => {
+            text += `── Page ${num} ${"─".repeat(40)}\n${page.fullText}\n\n`;
+          });
+          outputContent.textContent = text || "(no text extracted)";
+          break;
+        }
+        case "words": {
+          const obj = {};
+          r.texts.forEach((page, num) => { obj[num] = page; });
+          outputContent.textContent = JSON.stringify(obj, null, 2);
+          break;
+        }
+        case "lines": {
+          const obj = {};
+          r.pageLines.forEach((lines, num) => { obj[num] = lines; });
+          outputContent.textContent = JSON.stringify(obj, null, 2);
+          break;
+        }
+        case "compact": {
+          const obj = {};
+          r.compactLines.forEach((lines, num) => { obj[num] = lines; });
+          outputContent.textContent = JSON.stringify(obj, null, 2);
+          break;
+        }
+        case "toon": {
+          if (r.toonOutput) {
+            outputContent.textContent = r.toonOutput;
+          } else {
+            outputContent.textContent = "TOON output is disabled. Enable 'Enable TOON' in the config panel and re-process.";
+          }
+          break;
+        }
+      }
+    }
+
+    // ── Copy ─────────────────────────────────────────
+    copyBtn.addEventListener("click", () => {
+      const text = outputContent.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" class="text-green-400" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg> Copied!`;
+        setTimeout(() => {
+          copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg> Copy`;
+        }, 1500);
+      });
+    });
+  </script>
+</body>
+</html>

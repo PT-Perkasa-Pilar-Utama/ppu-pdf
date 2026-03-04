@@ -4,6 +4,9 @@ Easily extract text from digital PDF and Scanned PDF files with coordinate and f
 
 There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pdfjs-dist).
 
+> **[Live Demo →](https://pt-perkasa-pilar-utama.github.io/ppu-pdf/)**
+
+
 ## Features
 
 - **Text Extraction:** Retrieve all text content from a PDF.
@@ -408,6 +411,119 @@ Determines whether the PDF appears to be a scanned document.
 - **Returns:** `true` if the PDF is considered scanned; otherwise, `false`.
 
 For other methods I encourage you to try it out yourself.
+
+## Web / Browser Support
+
+Starting from v6.0.0, **ppu-pdf** supports running directly in the browser! Import from `ppu-pdf/web` to use `PdfReaderLegacyWeb` — a browser-native PDF reader powered by `pdfjs-dist`.
+
+### Web Features
+
+| Feature                  | Node (`PdfReaderLegacy`) | Web (`PdfReaderLegacyWeb`) |
+| ------------------------ | :----------------------: | :------------------------: |
+| `open()`                 |            ✅            |             ✅             |
+| `getTexts()`             |            ✅            |             ✅             |
+| `getTextsScanned()`      |            ✅            |      ✅ (ppu-paddle-ocr/web)      |
+| `getLinesFromTexts()`    |            ✅            |             ✅             |
+| `getCompactLinesFromTexts()` |        ✅            |             ✅             |
+| `getLinesFromTextsInToon()` |         ✅            |             ✅             |
+| `isScanned()`            |            ✅            |             ✅             |
+| `isPageScanned()`        |            ✅            |             ✅             |
+| `renderAll()`            |     ✅ (Node Canvas)     |    ✅ (HTMLCanvasElement)   |
+| `destroy()`              |            ✅            |             ✅             |
+| `dumpCanvasMap()`        |            ✅            |      ❌ (no filesystem)    |
+| `saveCanvasToPng()`      |            ✅            |      ❌ (no filesystem)    |
+
+> **Note:** `PdfReader` (mupdf-based) is **not available** in the browser — it requires native bindings. Only `PdfReaderLegacyWeb` (pdfjs-dist) is supported on the web.
+
+### Web Installation
+
+```bash
+npm install ppu-pdf
+# Optional for scanned PDF OCR in the browser:
+npm install ppu-paddle-ocr
+```
+
+### Web Usage (Bundler)
+
+```ts
+import { PdfReaderLegacyWeb } from "ppu-pdf/web";
+
+const reader = new PdfReaderLegacyWeb({ verbose: false });
+
+// From a file input or fetch
+const response = await fetch("document.pdf");
+const buffer = await response.arrayBuffer();
+
+const pdf = await reader.open(buffer);
+const texts = await reader.getTexts(pdf);
+console.log(texts.get(1)?.fullText);
+
+const lines = reader.getLinesFromTexts(texts);
+const compactLines = reader.getCompactLinesFromTexts(texts);
+const isScanned = reader.isScanned(texts);
+
+await reader.destroy(pdf);
+```
+
+### Web Usage (CDN / No Bundler)
+
+```html
+<script type="importmap">
+{
+  "imports": {
+    "pdfjs-dist": "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/+esm",
+    "pdfjs-dist/types/src/display/api": "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/+esm",
+    "pdfjs-dist/types/web/interfaces": "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/+esm",
+    "@toon-format/toon": "https://cdn.jsdelivr.net/npm/@toon-format/toon@2.1.0/+esm",
+    "onnxruntime-web": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.2/dist/ort.all.bundle.min.mjs",
+    "ppu-paddle-ocr/web": "https://cdn.jsdelivr.net/npm/ppu-paddle-ocr@4/web/index.js",
+    "ppu-ocv/web": "https://cdn.jsdelivr.net/npm/ppu-ocv@2/index.web.js"
+  }
+}
+</script>
+<script type="module">
+  import { PdfReaderLegacyWeb } from "https://cdn.jsdelivr.net/npm/ppu-pdf@6/web/index.js";
+
+  const reader = new PdfReaderLegacyWeb();
+  // ... use as shown above
+</script>
+```
+
+### Scanned PDF OCR (Web)
+
+For scanned PDF text extraction in the browser, explicitly load the engine in top-level await space (`<script type="module">`) instead of subscribing to `DOMContentLoaded`.
+
+```html
+<script type="module">
+  import { PdfReaderLegacyWeb } from "ppu-pdf/web";
+  import { PaddleOcrService } from "ppu-paddle-ocr/web";
+
+  // Eagerly pre-warm the WebAssembly engine
+  const ocrService = new PaddleOcrService();
+  await ocrService.initialize();
+
+  // Create an adapter matching the exact interface `getTextsScanned` requires
+  const ocrAdapter = {
+    initialize: async () => {}, // Pre-initialized above to avoid stutter
+    recognize: async (canvas) => {
+      return await ocrService.recognize(canvas);
+    }
+  };
+
+  const reader = new PdfReaderLegacyWeb();
+  const pdf = await reader.open(buffer);
+  
+  // Render PDF explicitly into mapped canvas elements first
+  const canvasMap = await reader.renderAll(pdf, 72);
+  
+  // Inject the mapped canvas and the OCR engine to extract words and bounding boxes
+  const texts = await reader.getTextsScanned(ocrAdapter, canvasMap);
+  console.log(texts.get(1)?.fullText);
+
+  await reader.destroy(pdf);
+</script>
+```
+
 
 ## Contributing
 

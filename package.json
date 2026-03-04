@@ -1,6 +1,6 @@
 {
   "name": "ppu-pdf",
-  "version": "5.8.0",
+  "version": "6.0.0",
   "description": "Easily extract text from digital PDF files with coordinate and font size included, and optionally group text by lines or render scanned pdf to canvas/png.",
   "keywords": [
     "pdf-reader",
@@ -16,35 +16,45 @@
     "pdfjs",
     "mupdf",
     "mupdfjs",
-    "ocr"
+    "ocr",
+    "web",
+    "browser"
   ],
   "author": "snowfluke",
   "license": "MIT",
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./web": {
+      "types": "./web/index.d.ts",
+      "default": "./web/index.js"
+    }
+  },
   "scripts": {
     "task": "bun scripts/task.ts",
     "build:test": "bun task build && bun test",
     "build:publish": "bun task build && bun task report-size && bun task publish",
-    "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
     "compile:binary": "bun build --production ./src/index.ts --compile --outfile ./dist/ppu-pdf-bin",
     "compile:wasm": "cp ./node_modules/mupdf/dist/mupdf-wasm.wasm dist/",
     "compile": "bun compile:binary && bun compile:wasm",
-    "run:binary": "./dist/ppu-pdf-bin"
+    "run:binary": "./dist/ppu-pdf-bin",
+    "lint": "prettier --check ./src",
+    "lint:fix": "prettier --write ./src",
+    "demo": "bunx -y serve -l 3331 ."
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "latest",
     "@types/bun": "latest",
     "@types/uglify-js": "latest",
-    "eslint": "latest",
-    "eslint-plugin-jsdoc": "latest",
     "mitata": "latest",
-    "ppu-paddle-ocr": "^3.5.0",
+    "ppu-paddle-ocr": "^4.0.2",
+    "prettier": "^3.8.1",
     "tsx": "latest",
     "typescript": "latest",
-    "typescript-eslint": "latest",
     "uglify-js": ">=2.4.24"
   },
   "repository": {

@@ -1,15 +1,20 @@
 {
   "name": "@snowfluke/ppu-pdf",
-  "version": "5.8.0",
+  "version": "6.0.0",
   "license": "MIT",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./web": "./src/web/index.ts"
+  },
   "publish": {
     "include": [
       "LICENSE",
       "README.md",
       "package.json",
       "tsconfig.json",
-      "src/*.ts"
+      "src/*.ts",
+      "src/core/*.ts",
+      "src/web/*.ts"
     ],
     "exclude": [
       "tests",

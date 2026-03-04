@@ -101,7 +101,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
    */
   async getTextsScanned(
     paddleOcrService: PaddleOcrService,
-    canvasMap: CanvasMap
+    canvasMap: CanvasMap,
   ): Promise<PageTexts> {
     await paddleOcrService.initialize();
 
@@ -113,7 +113,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
       const canvas = canvasMap.get(i);
       if (canvas) {
         ocrPromises.push(
-          this.extractOcrTexts(pages, i, canvas, paddleOcrService)
+          this.extractOcrTexts(pages, i, canvas, paddleOcrService),
         );
       }
     }
@@ -126,7 +126,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
     canvasMap: CanvasMap,
     pageNum: number,
     page: PDFPageProxy,
-    normalizedWidth?: number
+    normalizedWidth?: number,
   ): Promise<void> {
     let viewport = page.getViewport({ scale: 1 });
 
@@ -175,7 +175,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
   private async extractTexts(
     linesMap: PageTexts,
     pageNum: number,
-    page: PDFPageProxy
+    page: PDFPageProxy,
   ): Promise<void> {
     const { height, transform } = page.getViewport({ scale: 1 });
     const pdfToken = await page.getTextContent();
@@ -183,7 +183,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
     const textsMapped = this.mapTokenToPdfWord(
       pdfToken.items,
       transform,
-      pageNum
+      pageNum,
     );
 
     let textsSorted = this.options.simpleSortAlgorithm
@@ -213,7 +213,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
     linesMap: PageTexts,
     pageNum: number,
     canvas: Canvas,
-    paddleOcrService: PaddleOcrService
+    paddleOcrService: PaddleOcrService,
   ): Promise<void> {
     try {
       const ocrResult = await paddleOcrService.recognize(canvas);
@@ -256,7 +256,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
 
   private convertOcrToPdfWords(
     ocrResult: PaddleOcrResult,
-    pageNum: number
+    pageNum: number,
   ): PdfWord[] {
     if (!ocrResult?.lines || !Array.isArray(ocrResult.lines)) {
       return [];
@@ -301,7 +301,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
   private mapTokenToPdfWord(
     items: (TextItem | TextMarkedContent)[],
     transform: number[],
-    pageNum: number
+    pageNum: number,
   ): PdfWord[] {
     let pdfWords: PdfWord[] = [];
 
@@ -310,7 +310,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
 
       const [_, __, ___, ____, x, y] = pdfjs.Util.transform(
         transform,
-        token.transform
+        token.transform,
       );
 
       const scale = x / token.transform[4];
@@ -397,7 +397,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
             width: bbox.x1 - currentGroup.bbox.x0,
             height: Math.max(
               currentGroup.dimension.height,
-              content.dimension.height
+              content.dimension.height,
             ),
           },
           bbox: {
@@ -491,12 +491,12 @@ export class PdfReaderLegacy extends PdfReaderCommon {
    */
   getCompactLinesFromTexts(
     pageTexts: PageTexts,
-    algorithm: PdfCompactLineAlgorithm = "middleY"
+    algorithm: PdfCompactLineAlgorithm = "middleY",
   ): CompactPageLines {
     return this.getCompactLinesFromTextsCommon(
       pageTexts,
       algorithm,
-      this.startIndex
+      this.startIndex,
     );
   }
 
@@ -511,7 +511,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
     options: PdfScannedThreshold = {
       wordsPerPage: CONSTANT.WORDS_PER_PAGE_THRESHOLD,
       textLength: CONSTANT.TEXT_LENGTH_THRESHOLD,
-    }
+    },
   ): boolean {
     return this.isScannedCommon(pageTexts, options, this.startIndex);
   }
@@ -527,7 +527,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
     options: PdfScannedThreshold = {
       wordsPerPage: CONSTANT.WORDS_PER_PAGE_THRESHOLD,
       textLength: CONSTANT.TEXT_LENGTH_THRESHOLD,
-    }
+    },
   ): boolean {
     return this.isPageScannedCommon(pageText, options);
   }
@@ -541,7 +541,7 @@ export class PdfReaderLegacy extends PdfReaderCommon {
   async dumpCanvasMap(
     canvasMap: Map<number, Canvas>,
     filename: string,
-    foldername = "out"
+    foldername = "out",
   ): Promise<void> {
     this.dumpCanvasMapCommon(canvasMap, filename, foldername, this.startIndex);
   }

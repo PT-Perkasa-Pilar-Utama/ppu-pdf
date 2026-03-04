@@ -12,7 +12,7 @@ export class NodeCanvasFactory {
    */
   create(
     width: number,
-    height: number
+    height: number,
   ): { canvas: Canvas; context: SKRSContext2D } {
     const canvas = createCanvas(width, height);
     const context = canvas.getContext("2d");
@@ -31,7 +31,7 @@ export class NodeCanvasFactory {
   reset(
     canvasAndContext: { canvas: Canvas; context: SKRSContext2D },
     width: number,
-    height: number
+    height: number,
   ): void {
     canvasAndContext.canvas.width = width;
     canvasAndContext.canvas.height = height;

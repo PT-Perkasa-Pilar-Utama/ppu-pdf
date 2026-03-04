@@ -1,15 +1,35 @@
-import "./mupdf-workaround.js";
+/** @module Web entrypoint for ppu-pdf browser support.
+ *
+ * Provides `PdfReaderLegacyWeb`, a browser-compatible PDF reader based on pdfjs-dist.
+ * Supports text extraction, line grouping, compact lines, TOON format, scanned detection,
+ * page rendering to HTMLCanvasElement, and scanned PDF OCR via ppu-paddle-ocr/web.
+ *
+ * @example
+ * ```ts
+ * import { PdfReaderLegacyWeb } from "ppu-pdf/web";
+ *
+ * const reader = new PdfReaderLegacyWeb({ verbose: false });
+ * const response = await fetch("my-document.pdf");
+ * const buffer = await response.arrayBuffer();
+ *
+ * const pdf = await reader.open(buffer);
+ * const texts = await reader.getTexts(pdf);
+ * console.log(texts.get(1)?.fullText);
+ * await reader.destroy(pdf);
+ * ```
+ */
 
-import { Canvas, createCanvas, GlobalFonts, ImageData } from "@napi-rs/canvas";
-import { existsSync, readFileSync } from "fs";
+import * as pdfjs from "pdfjs-dist";
 
-import { Document, Page, type PDFPage } from "mupdf";
-import { type DocumentStructure } from "./mupdf.interface.js";
-
-import { PdfReaderCommon } from "./pdf-reader-common.js";
-import { CONSTANT, PDF_READER_DEFAULT_OPTIONS } from "./pdf.constant.js";
 import {
-  type CanvasMap,
+  type TextItem,
+  type TextMarkedContent,
+} from "pdfjs-dist/types/src/display/api";
+import { type PDFPageProxy } from "pdfjs-dist/types/web/interfaces";
+
+import { BasePdfReaderCommon } from "../core/base-pdf-reader-common.js";
+import { CONSTANT, PDF_READER_DEFAULT_OPTIONS } from "../pdf.constant.js";
+import {
   type CompactPageLines,
   type PageLines,
   type PageTexts,
@@ -18,93 +38,91 @@ import {
   type PdfReaderOptions,
   type PdfScannedThreshold,
   type PdfWord,
-} from "./pdf.interface.js";
+} from "../pdf.interface.js";
+import { type PdfToken } from "../pdfjs.interface.js";
 
-import { type PaddleOcrResult, type PaddleOcrService } from "ppu-paddle-ocr";
-
-const mupdf = await import("mupdf");
+/** Canvas map type for web — uses HTMLCanvasElement instead of Node.js native Canvas. */
+export type WebCanvasMap = Map<number, HTMLCanvasElement>;
 
 /**
- * PdfReader class based on mupdfjs for reading and processing PDF documents.
+ * Browser-compatible PDF reader based on pdfjs-dist.
+ *
+ * Supports all digital PDF features: text extraction, line grouping,
+ * compact lines, TOON format, and scanned detection.
+ * Also supports page rendering to HTMLCanvasElement and scanned PDF OCR
+ * when combined with ppu-paddle-ocr/web.
  */
-export class PdfReader extends PdfReaderCommon {
+export class PdfReaderLegacyWeb extends BasePdfReaderCommon {
   private options: PdfReaderOptions;
-  public readonly startIndex = 0;
+  public readonly startIndex = 1;
 
   constructor(options: Partial<PdfReaderOptions> = {}) {
     super();
-    this.options = { ...PDF_READER_DEFAULT_OPTIONS, ...options };
-
-    if (this.options.fonts.length) {
-      for (const f of this.options.fonts) {
-        if (!existsSync(f.path))
-          throw new Error(`Invalid font path: [${f.name}] ${f}`);
-
-        GlobalFonts.registerFromPath(f.path, f.name);
-      }
-    }
+    // In browser, fonts are handled by the browser itself — ignore fonts option
+    this.options = {
+      ...PDF_READER_DEFAULT_OPTIONS,
+      ...options,
+      fonts: [],
+    };
   }
 
   /**
-   * Opens a PDF document from a file path or an ArrayBuffer.
-   * @param filename - The file path or ArrayBuffer of the PDF document.
-   * @returns The opened PDFDocument instance.
+   * Opens a PDF document from an ArrayBuffer.
+   * @param data - The ArrayBuffer containing the PDF data.
+   * @returns The opened PDFDocumentProxy instance.
    */
-  open(filename: string | ArrayBuffer): Document {
-    let data: Uint8Array<ArrayBuffer>;
+  async open(data: ArrayBuffer): Promise<pdfjs.PDFDocumentProxy> {
+    const uint8 = new Uint8Array(data);
 
-    if (typeof filename == "string") {
-      data = new Uint8Array(readFileSync(filename));
-    } else {
-      data = new Uint8Array(filename);
-    }
-
-    return mupdf.PDFDocument.openDocument(data, "application/pdf");
+    return pdfjs.getDocument({
+      verbosity: +this.options.verbose!,
+      data: uint8,
+    }).promise;
   }
 
   /**
-   * Renders all pages of a PDF document into canvases.
-   * @param doc - The PDFDocument to render.
-   * @param dpi - The resolution (dots per inch) to render the PDF pages.
-   *              Higher values improve OCR accuracy but increase memory usage.
-   * @returns A map of page numbers to Canvas instances, where each page number
-   *          corresponds to its rendered canvas representation.
+   * Renders all pages of a PDF document into HTMLCanvasElements.
+   * @param doc - The PDFDocumentProxy to render.
+   * @returns A map of page numbers to HTMLCanvasElement instances.
    */
-  async renderAll(doc: Document, dpi: number = 72): Promise<CanvasMap> {
-    const canvasMap = new Map<number, Canvas>();
+  async renderAll(doc: pdfjs.PDFDocumentProxy): Promise<WebCanvasMap> {
+    const canvasMap = new Map<number, HTMLCanvasElement>();
 
-    const numOfPages = doc.countPages();
-    const renderPromises = Array.from({ length: numOfPages }, (_, i) => {
-      const page = doc.loadPage(i);
-      return this.getCanvas(canvasMap, i, page, dpi);
-    });
+    const numOfPages = doc.numPages;
+    const renderPromises: Promise<void>[] = [];
+    for (let i = this.startIndex; i <= numOfPages; i++) {
+      const page = await doc.getPage(i);
+      renderPromises.push(this.getCanvas(canvasMap, i, page));
+    }
 
     await Promise.all(renderPromises);
     return canvasMap;
   }
 
   /**
-   * Extracts text from scanned PDF pages using ppu-paddle-ocr package.
-   * @param paddleOcrService - The OCR service instance specifically from ppu-paddle-ocr to use for text recognition.
-   * @param canvasMap - A map of page numbers to Canvas instances representing rendered PDF pages.
+   * Extracts text from scanned PDF pages using an OCR service.
+   * Compatible with ppu-paddle-ocr/web's PaddleOcrService.
+   * @param ocrService - Any OCR service with initialize() and recognize(canvas) methods.
+   * @param canvasMap - A map of page numbers to HTMLCanvasElement instances.
    * @returns A map of page numbers to extracted text data with OCR results.
    */
   async getTextsScanned(
-    paddleOcrService: PaddleOcrService,
-    canvasMap: CanvasMap,
+    ocrService: {
+      initialize(): Promise<void>;
+      recognize(canvas: HTMLCanvasElement): Promise<any>;
+    },
+    canvasMap: WebCanvasMap,
   ): Promise<PageTexts> {
-    await paddleOcrService.initialize();
+    await ocrService.initialize();
 
     const pages: PageTexts = new Map();
     const numOfPages = canvasMap.size;
     const ocrPromises: Promise<void>[] = [];
 
-    for (let i = this.startIndex; i < numOfPages; i++) {
+    for (let i = this.startIndex; i <= numOfPages; i++) {
       const canvas = canvasMap.get(i);
       if (canvas) {
-        ocrPromises.push(
-          this.extractOcrTexts(pages, i, canvas, paddleOcrService),
-        );
+        ocrPromises.push(this.extractOcrTexts(pages, i, canvas, ocrService));
       }
     }
 
@@ -113,62 +131,50 @@ export class PdfReader extends PdfReaderCommon {
   }
 
   private async getCanvas(
-    canvasMap: CanvasMap,
+    canvasMap: WebCanvasMap,
     pageNum: number,
-    page: PDFPage | Page,
-    dpi: number,
+    page: PDFPageProxy,
+    normalizedWidth?: number,
   ): Promise<void> {
-    const pageDimension = page.getBounds();
-    const scaleFactor = mupdf.Matrix.scale(dpi / 72, dpi / 72);
-    const bbox = mupdf.Rect.transform(pageDimension, scaleFactor);
+    let viewport = page.getViewport({ scale: 1 });
 
-    const pixmap = new mupdf.Pixmap(mupdf.ColorSpace.DeviceRGB, bbox, false);
-    pixmap.clear(255);
-
-    const device = new mupdf.DrawDevice(scaleFactor, pixmap);
-    page.run(device, mupdf.Matrix.identity);
-
-    device.close();
-    page.destroy();
-
-    const width = pixmap.getWidth();
-    const height = pixmap.getHeight();
-
-    const pixels3 = new Uint8ClampedArray(pixmap.getPixels());
-    const pixels4 = new Uint8ClampedArray(width * height * 4);
-
-    for (let i = 0, j = 0; i < pixels3.length; i += 3, j += 4) {
-      pixels4[j] = pixels3[i];
-      pixels4[j + 1] = pixels3[i + 1];
-      pixels4[j + 2] = pixels3[i + 2];
-      pixels4[j + 3] = 255;
+    if (this.options.scale && this.options.scale > 1) {
+      viewport = page.getViewport({ scale: this.options.scale });
+    } else if (normalizedWidth) {
+      const normalizedScale = Math.floor(normalizedWidth / viewport.width);
+      viewport = page.getViewport({ scale: normalizedScale });
     }
 
-    const imageData = new ImageData(pixels4, width, height) as any;
-    imageData.colorSpace = "srgb";
+    const width = Math.floor(viewport.width);
+    const height = Math.floor(viewport.height);
 
-    const canvas = createCanvas(pageDimension[2], pageDimension[3]);
-    const context = canvas.getContext("2d");
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d", { willReadFrequently: true })!;
 
-    canvas.width = imageData.width;
-    canvas.height = imageData.height;
+    const renderContext: any = {
+      intent: "print",
+      canvasContext: context,
+      viewport: viewport,
+    };
 
-    context.putImageData(imageData, 0, 0);
     canvasMap.set(pageNum, canvas);
+    return page.render(renderContext).promise;
   }
 
   /**
    * Extracts text from all pages of a PDF document.
-   * @param doc - The PDFDocument to extract text from.
+   * @param doc - The PDFDocumentProxy to extract text from.
    * @returns A map of page numbers to extracted text data.
    */
-  async getTexts(doc: Document): Promise<PageTexts> {
+  async getTexts(pdf: pdfjs.PDFDocumentProxy): Promise<PageTexts> {
     const pages: PageTexts = new Map();
-    const numOfPages = doc.countPages();
+    const numOfPages = pdf.numPages;
     const getTextContentPromises: Promise<void>[] = [];
 
-    for (let i = this.startIndex; i < numOfPages; i++) {
-      const page = doc.loadPage(i);
+    for (let i = this.startIndex; i <= numOfPages; i++) {
+      const page = await pdf.getPage(i);
       getTextContentPromises.push(this.extractTexts(pages, i, page));
     }
 
@@ -179,17 +185,17 @@ export class PdfReader extends PdfReaderCommon {
   private async extractTexts(
     linesMap: PageTexts,
     pageNum: number,
-    page: Page,
+    page: PDFPageProxy,
   ): Promise<void> {
-    const [, , , height] = page.getBounds();
+    const { height, transform } = page.getViewport({ scale: 1 });
+    const pdfToken = await page.getTextContent();
 
-    const docStructure = JSON.parse(
-      page.toStructuredText("ignore-actualtext,collect-styles").asJSON(),
-    ) as DocumentStructure;
+    const textsMapped = this.mapTokenToPdfWord(
+      pdfToken.items,
+      transform,
+      pageNum,
+    );
 
-    page.destroy();
-
-    const textsMapped = this.mapStructureToPdfWord(docStructure, pageNum);
     let textsSorted = this.options.simpleSortAlgorithm
       ? this.sortTextContentSimple(textsMapped)
       : this.sortTextContent(textsMapped);
@@ -216,11 +222,13 @@ export class PdfReader extends PdfReaderCommon {
   private async extractOcrTexts(
     linesMap: PageTexts,
     pageNum: number,
-    canvas: Canvas,
-    paddleOcrService: PaddleOcrService,
+    canvas: HTMLCanvasElement,
+    ocrService: {
+      recognize(canvas: HTMLCanvasElement): Promise<any>;
+    },
   ): Promise<void> {
     try {
-      const ocrResult = await paddleOcrService.recognize(canvas);
+      const ocrResult = await ocrService.recognize(canvas);
       const pdfWords: PdfWord[] = this.convertOcrToPdfWords(ocrResult, pageNum);
 
       let textsSorted = this.options.simpleSortAlgorithm
@@ -258,18 +266,15 @@ export class PdfReader extends PdfReaderCommon {
     }
   }
 
-  private convertOcrToPdfWords(
-    ocrResult: PaddleOcrResult,
-    pageNum: number,
-  ): PdfWord[] {
+  private convertOcrToPdfWords(ocrResult: any, pageNum: number): PdfWord[] {
     if (!ocrResult?.lines || !Array.isArray(ocrResult.lines)) {
       return [];
     }
 
-    return ocrResult.lines.flatMap((line) => {
+    return ocrResult.lines.flatMap((line: any) => {
       if (!Array.isArray(line)) return [];
 
-      return line.map((recognition) => {
+      return line.map((recognition: any) => {
         const { x, y, width, height } = recognition.box;
 
         return {
@@ -302,35 +307,46 @@ export class PdfReader extends PdfReaderCommon {
     });
   }
 
-  private mapStructureToPdfWord(
-    structure: DocumentStructure,
+  private mapTokenToPdfWord(
+    items: (TextItem | TextMarkedContent)[],
+    transform: number[],
     pageNum: number,
   ): PdfWord[] {
     let pdfWords: PdfWord[] = [];
 
-    const rawTexts = structure.blocks.map((el) => el.lines).flat();
+    for (const item of items) {
+      const token = item as PdfToken;
 
-    for (const item of rawTexts) {
-      const { x, y, w, h } = item.bbox;
-      const font = item.font;
+      const [_, __, ___, ____, x, y] = pdfjs.Util.transform(
+        transform,
+        token.transform,
+      );
+
+      const scale = x / token.transform[4];
 
       const pdfWord: PdfWord = {
-        text: item.text,
+        text: token.str,
         bbox: {
           x0: Math.round(x),
-          y0: Math.round(y),
-          x1: Math.round(x + w),
-          y1: Math.round(y + h),
+          y0: Math.round(y - token.height * scale),
+          x1: Math.round(x + token.width * scale),
+          y1: Math.round(y),
         },
         dimension: {
-          width: Math.round(w),
-          height: Math.round(h),
+          width: Math.round(token.width),
+          height: Math.round(token.height),
         },
         metadata: {
-          writing: item.wmode == 0 ? "horizontal" : "vertical",
-          direction: "",
-          font: font,
-          hasEOL: false,
+          writing: "",
+          direction: token.dir,
+          font: {
+            name: token.fontName,
+            size: Number(token.height.toFixed(4)),
+            family: "",
+            style: "",
+            weight: "",
+          },
+          hasEOL: token.hasEOL,
           pageNum,
         },
       };
@@ -349,8 +365,8 @@ export class PdfReader extends PdfReaderCommon {
     for (const content of texts) {
       const { text, dimension, metadata, bbox } = content;
 
-      if (text === "" && dimension.width === 0) continue;
-      if (text == " " && metadata.font.size == 0) continue;
+      if (text === "" && (dimension.width === 0 || metadata.hasEOL)) continue;
+      if (text == " " && metadata.font.size == 0 && !metadata.hasEOL) continue;
 
       if (!currentGroup) {
         currentGroup = { ...content };
@@ -376,7 +392,10 @@ export class PdfReader extends PdfReaderCommon {
 
       if (
         isLeadingGroupAnUnorderedList ||
-        (isWithinXRange && isWithinYRange && hasSameFontSize)
+        (isWithinXRange &&
+          isWithinYRange &&
+          hasSameFontSize &&
+          !currentGroup.metadata.hasEOL)
       ) {
         currentGroup = {
           text:
@@ -397,18 +416,31 @@ export class PdfReader extends PdfReaderCommon {
             y1: Math.max(currentGroup.bbox.y1, bbox.y1),
           },
           metadata: {
-            writing: metadata.writing,
-            direction: "",
-            font: isLeadingGroupAnUnorderedList
-              ? metadata.font
-              : currentGroup.metadata.font,
-            hasEOL: false,
+            writing: "",
+            direction: metadata.direction,
+            font: {
+              name: metadata.font.name,
+              size: isLeadingGroupAnUnorderedList
+                ? metadata.font.size
+                : currentGroup.metadata.font.size,
+              family: "",
+              style: "",
+              weight: "",
+            },
+            hasEOL: metadata.hasEOL,
             pageNum: metadata.pageNum,
           },
         };
       } else {
         result.push(currentGroup);
         currentGroup = { ...content };
+      }
+
+      if (metadata.hasEOL) {
+        if (currentGroup) {
+          result.push(currentGroup);
+        }
+        currentGroup = null;
       }
     }
 
@@ -426,13 +458,11 @@ export class PdfReader extends PdfReaderCommon {
     return texts
       .filter((el) => {
         const hasFontSize = el.metadata.font.size !== 0;
-        const notEmptySpace = el.text.trim() !== "";
         const isAfterHeader = el.bbox.y0 > HEADER_THRESHOLD;
         const isBeforeFooter = el.bbox.y0 < FOOTER_THRESHOLD;
 
         return (
           hasFontSize &&
-          notEmptySpace &&
           (!this.options.excludeHeader || isAfterHeader) &&
           (!this.options.excludeFooter || isBeforeFooter)
         );
@@ -480,20 +510,6 @@ export class PdfReader extends PdfReaderCommon {
   }
 
   /**
-   * Saves rendered canvases as image files.
-   * @param canvasMap - The map of canvases to save.
-   * @param filename - The base filename for the output images.
-   * @param foldername - The folder to save the images in (default: "out").
-   */
-  async dumpCanvasMap(
-    canvasMap: Map<number, Canvas>,
-    filename: string,
-    foldername = "out",
-  ): Promise<void> {
-    this.dumpCanvasMapCommon(canvasMap, filename, foldername, this.startIndex);
-  }
-
-  /**
    * Determines if the PDF document is scanned based on text thresholds.
    * @param pageTexts - The extracted text data from a PDF.
    * @param options - The threshold options for scanned detection.
@@ -510,7 +526,7 @@ export class PdfReader extends PdfReaderCommon {
   }
 
   /**
-   * Determines if the individual PDF page is a scanned/digital based on text thresholds.
+   * Determines if the individual PDF page is scanned/digital based on text thresholds.
    * @param pageText - The extracted page text.
    * @param options - The threshold options for scanned detection.
    * @returns True if the page is likely scanned, false otherwise.
@@ -527,17 +543,9 @@ export class PdfReader extends PdfReaderCommon {
 
   /**
    * Destroys the PDF document instance to free memory.
-   * @param doc - The PDFDocument instance to destroy.
+   * @param doc - The PDFDocumentProxy instance to destroy.
    */
-  destroy(doc: Document): void {
-    return doc.destroy();
-  }
-
-  /**
-   * Destroys a PDF page instance to free memory.
-   * @param page - The PDFPage instance to destroy.
-   */
-  destroyPage(page: PDFPage): void {
-    return page.destroy();
+  async destroy(pdf: pdfjs.PDFDocumentProxy): Promise<void> {
+    await pdf.destroy();
   }
 }

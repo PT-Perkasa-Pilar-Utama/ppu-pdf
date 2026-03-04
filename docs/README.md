@@ -9,24 +9,29 @@ There are two class of `PdfReader` (uses mupdfjs) and `PdfReaderLegacy` uses (pd
 - **Scanned PDF Canvas Rendering:** Convert scanned pdf per page into a ready to processed canvas.
 - **Scanned PDF to PNG Images:** Convert and write all pdf pages to PNG images.
 - **Parallel execution** Leverage workerpool for better speed (WIP)
+- **Web/Browser Support:** Use `PdfReaderLegacyWeb` for browser-native PDF processing.
+
+> **[Live Demo →](https://pt-perkasa-pilar-utama.github.io/ppu-pdf/)**
 
 ## Differences
 
-| Indicator                  | PdfReader | PdfReaderLegacy |
-| -------------------------- | --------- | --------------- |
-| Library                    | mupdfjs   | pdfjs-dist      |
-| Pages index start          | 0         | 1               |
-| open()                     | ✅        | ✅              |
-| getTexts()                 | ✅        | ✅              |
-| isScanned()                | ✅        | ✅              |
-| getLinesFromTexts()        | ✅        | ✅              |
-| getCompactLinesFromTexts() | ✅        | ✅              |
-| destroy()                  | ✅        | ✅              |
-| destroyPage()              | ✅        | ❌              |
-| renderAll()                | ✅        | ✅              |
-| saveCanvasToPng()          | ✅        | ✅              |
-| dumpCanvasMap()            | ✅        | ✅              |
-| Resize viewport/Custom DPI | ✅        | ✅              |
+| Indicator                  | PdfReader | PdfReaderLegacy | PdfReaderLegacyWeb (browser) |
+| -------------------------- | --------- | --------------- | :--------------------------: |
+| Library                    | mupdfjs   | pdfjs-dist      |          pdfjs-dist          |
+| Pages index start          | 0         | 1               |              1               |
+| open()                     | ✅        | ✅              |              ✅              |
+| getTexts()                 | ✅        | ✅              |              ✅              |
+| getTextsScanned()          | ✅        | ✅              |    ✅ (ppu-paddle-ocr/web)   |
+| isScanned()                | ✅        | ✅              |              ✅              |
+| getLinesFromTexts()        | ✅        | ✅              |              ✅              |
+| getCompactLinesFromTexts() | ✅        | ✅              |              ✅              |
+| getLinesFromTextsInToon()  | ✅        | ✅              |              ✅              |
+| destroy()                  | ✅        | ✅              |              ✅              |
+| destroyPage()              | ✅        | ❌              |              ❌              |
+| renderAll()                | ✅        | ✅              |    ✅ (HTMLCanvasElement)    |
+| saveCanvasToPng()          | ✅        | ✅              |     ❌ (no filesystem)      |
+| dumpCanvasMap()            | ✅        | ✅              |     ❌ (no filesystem)      |
+| Resize viewport/Custom DPI | ✅        | ✅              |              ✅              |
 
 ## Benchmark
 
