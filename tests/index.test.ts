@@ -114,3 +114,22 @@ afterAll(() => {
   pdfReader.destroy(pdf);
   pdfReader.destroy(pdfScan);
 });
+
+describe("rebuild", () => {
+  test("should successfully rebuild a scanned pdf and return a Uint8Array", async () => {
+    const ocr = new PaddleOcrService();
+    const canvasMap = await pdfReader.renderAll(pdfScan);
+    const texts = await pdfReader.getTextsScanned(ocr, canvasMap);
+    
+    const fileForRebuild = Bun.file("./assets/opposite-expectation-scan.pdf");
+    const scanBufferRebuild = await fileForRebuild.arrayBuffer();
+    const pdfScanForRebuild = pdfReader.open(scanBufferRebuild);
+    
+    const rebuiltBytes = await pdfReader.rebuild(pdfScanForRebuild, texts);
+    expect(rebuiltBytes instanceof Uint8Array).toBe(true);
+    expect(rebuiltBytes.length).toBeGreaterThan(0);
+    
+    pdfReader.destroy(pdfScanForRebuild);
+    await ocr.destroy();
+  });
+});

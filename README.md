@@ -187,11 +187,44 @@ const bufferScan = await fileScan.arrayBuffer();
 
 const pdfScan = pdfReader.open(bufferScan);
 const canvasMap = await pdfReader.renderAll(pdfScan);
-pdfReader.destroy(pdf);
+pdfReader.destroy(pdfScan); // Destroy early since we already hold the canvases
 
 pdfReader.dumpCanvasMap(canvasMap, "my-dumped-pdf");
 const texts = await pdfReader.getTextsScanned(ocr, canvasMap);
 console.log("texts: ", texts.get(0));
+```
+
+### Rebuilding a Scanned PDF into a Searchable PDF
+
+You can rebuild a scanned (flattened) PDF, turning it into a fully searchable document by overlaying the invisible recognized text on top of the original images. For a complete script, refer to `examples/rebuild-pdf.example.ts`.
+
+```ts
+import { PdfReader } from "ppu-pdf";
+import { PaddleOcrService } from "ppu-paddle-ocr";
+
+const pdfReader = new PdfReader({ verbose: false });
+const ocr = new PaddleOcrService();
+await ocr.initialize();
+
+const fileScan = Bun.file("./assets/test_japanese.pdf");
+const bufferScan = await fileScan.arrayBuffer();
+
+// 1. Open and Render the PDF into Canvases
+const pdfScan = pdfReader.open(bufferScan);
+const canvasMap = await pdfReader.renderAll(pdfScan);
+pdfReader.destroy(pdfScan);
+
+// 2. Extract OCR Texts
+const texts = await pdfReader.getTextsScanned(ocr, canvasMap);
+
+// 3. Rebuild Searchable PDF
+// Note: We open a fresh instance of the PDF for rebuilding
+const pdfForRebuild = pdfReader.open(bufferScan);
+const rebuiltPdfBuffer = await pdfReader.rebuild(pdfForRebuild, texts);
+pdfReader.destroy(pdfForRebuild);
+
+// 4. Save onto disk
+await Bun.write("./test_japanese_searchable.pdf", rebuiltPdfBuffer);
 ```
 
 ## `PdfReaderOptions`

@@ -93,7 +93,9 @@ export class PdfReader extends PdfReaderCommon {
     paddleOcrService: PaddleOcrService,
     canvasMap: CanvasMap,
   ): Promise<PageTexts> {
-    await paddleOcrService.initialize();
+    if (!paddleOcrService.isInitialized()) {
+      await paddleOcrService.initialize();
+    }
 
     const pages: PageTexts = new Map();
     const numOfPages = canvasMap.size;
@@ -523,6 +525,85 @@ export class PdfReader extends PdfReaderCommon {
     },
   ): boolean {
     return this.isPageScannedCommon(pageText, options);
+  }
+
+  /**
+   * Rebuilds a scanned PDF by placing invisible text over the orginial images,
+   * making the PDF searchable without altering its visual appearance.
+   * @param doc - The PDFDocument instance to rebuild.
+   * @param pageTexts - The extracted text data to overlay.
+   * @param options - Rebuild options (optional, default font is Helvetica).
+   * @returns A Uint8Array containing the rebuilt PDF binary data.
+   */
+  async rebuild(
+    doc: Document,
+    pageTexts: PageTexts,
+    options: {
+      fontName?: string;
+    } = {},
+  ): Promise<Uint8Array> {
+    const pdf = doc as any;
+
+    for (const [pageNum, pageText] of pageTexts.entries()) {
+      const page = pdf.loadPage(pageNum);
+      let pageObj = page.getObject();
+
+      // We use a CID font to support Unicode / CJK characters fully
+      let font = new mupdf.Font(options.fontName || "Helvetica");
+      
+      // Use addCJKFont for broad language support, specifying Adobe-Japan1 or zh-Hant as the fallback pool
+      let fontResource = pdf.addCJKFont(font, "ja", 0, false);
+
+      // Add font resource to page dictionary
+      let res = pageObj.get("Resources");
+      if (!res.isDictionary()) {
+        res = pdf.newDictionary();
+        pageObj.put("Resources", res);
+      }
+      let resFont = res.get("Font");
+      if (!resFont.isDictionary()) {
+        resFont = pdf.newDictionary();
+        res.put("Font", resFont);
+      }
+      resFont.put("F1", fontResource);
+
+      const pageBounds = page.getBounds();
+      const pageHeight = pageBounds[3] - pageBounds[1];
+
+      let contentStream = "q 3 Tr\n";
+      for (const word of pageText.words) {
+        const x = word.bbox.x0;
+        const y = pageHeight - word.bbox.y1;
+        const fontSize = word.metadata.font.size || word.dimension.height;
+
+        // When using CID fonts, text strings must be passed as UTF-16BE hex strings <xxxx>
+        let hexString = "";
+        for (let i = 0; i < word.text.length; i++) {
+          const hex = word.text.charCodeAt(i).toString(16).padStart(4, '0');
+          hexString += hex;
+        }
+
+        contentStream += `BT /F1 ${fontSize} Tf ${x} ${y} Td <${hexString}> Tj ET\n`;
+      }
+      contentStream += "Q\n";
+
+      // Insert stream into contents
+      let extraContents = pdf.addStream(contentStream, {});
+      let pageContents = pageObj.get("Contents");
+
+      if (pageContents.isNull()) {
+        pageObj.put("Contents", extraContents);
+      } else if (pageContents.isArray()) {
+        pageContents.push(extraContents);
+      } else {
+        let newPageContents = pdf.newArray();
+        newPageContents.push(pageContents);
+        newPageContents.push(extraContents);
+        pageObj.put("Contents", newPageContents);
+      }
+    }
+
+    return pdf.saveToBuffer("incremental").asUint8Array();
   }
 
   /**

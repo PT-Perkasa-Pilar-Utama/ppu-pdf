@@ -547,6 +547,26 @@ export class PdfReaderLegacy extends PdfReaderCommon {
   }
 
   /**
+   * Rebuilds a scanned PDF by placing invisible text over the orginial images,
+   * making the PDF searchable without altering its visual appearance.
+   * @param doc - The PDFDocumentProxy instance to rebuild.
+   * @param pageTexts - The extracted text data to overlay.
+   * @param options - Rebuild options (optional, default font is Helvetica).
+   * @returns A Uint8Array containing the rebuilt PDF binary data.
+   */
+  async rebuild(
+    doc: pdfjs.PDFDocumentProxy,
+    pageTexts: PageTexts,
+    options: {
+      fontName?: string;
+    } = {},
+  ): Promise<Uint8Array> {
+    throw new Error(
+      "PdfReaderLegacy does not support rebuilding PDFs. Please use PdfReader (mupdf) or implement this externally via pdf-lib.",
+    );
+  }
+
+  /**
    * Destroys the PDF document instance to free memory.
    * @param doc - The PDFDocumentProxy instance to destroy.
    */
