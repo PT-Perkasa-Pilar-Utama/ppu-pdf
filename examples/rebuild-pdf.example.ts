@@ -6,7 +6,6 @@ export const MODEL_BASE_URL =
 export const DICT_BASE_URL =
   "https://raw.githubusercontent.com/PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models/main";
 
-
 const pdfReader = new PdfReader({ verbose: false });
 
 // Tweak the model variant and dictionary to balance the accuracy and performance.
@@ -14,19 +13,14 @@ const pdfReader = new PdfReader({ verbose: false });
 const ocr = new PaddleOcrService({
   model: {
     detection: `${MODEL_BASE_URL}/detection/PP-OCRv5_mobile_det_infer.onnx`,
-    recognition: `${MODEL_BASE_URL}/recognition/multi/japan/v3/japan_PP-OCRv3_mobile_rec_infer.onnx`,
-    charactersDictionary: `${DICT_BASE_URL}/recognition/multi/japan/v3/japan_dict.txt`,
-    
-    
-    // recognition: `${MODEL_BASE_URL}/recognition/PP-OCRv5_mobile_rec_infer.onnx`,
-    // recognition: `${MODEL_BASE_URL}/recognition/PP-OCRv5_server_rec_infer.onnx`,
-    // charactersDictionary: `${DICT_BASE_URL}/recognition/ppocrv5_dict.txt`,
+    recognition: `${MODEL_BASE_URL}/recognition/PP-OCRv5_mobile_rec_infer.onnx`,
+    charactersDictionary: `${DICT_BASE_URL}/recognition/ppocrv5_dict.txt`,
   },
 });
 
 await ocr.initialize();
 
-// 1. Measure the time from reading the file from disk until the end
+// 1. Reading the file from disk
 const fileScan = Bun.file("./assets/test_japanese.pdf");
 const bufferScan = await fileScan.arrayBuffer();
 
@@ -45,5 +39,3 @@ pdfReader.destroy(pdfForRebuild);
 
 // 5. Save onto disk
 await Bun.write("./test_japanese_searchable.pdf", rebuiltPdfBuffer);
-
-
